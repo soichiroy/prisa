@@ -48,7 +48,9 @@ MLcovar <- function(
   main_estimate <- .CombineEstimates(point_estimate, coef_estimates$coef)
 
   # Prepare output
-  output <- .FormatOutput(main_estimate, point_estimate, coef_estimates)
+  output <- .FormatOutput(
+    data_list, main_estimate, point_estimate, coef_estimates
+  )
 
   return(output)
 }
@@ -89,7 +91,9 @@ MLcovar <- function(
   return(list(
     dat_labeled = dat_labeled,
     dat_unlabeled = unlabeled_set,
-    dat_full = data
+    dat_full = data,
+    n_ell = nrow(dat_labeled),
+    n_full = nrow(data)
   ))
 
 }
@@ -210,7 +214,7 @@ MLcovar <- function(
 }
 
 .FormatOutput <- function(
-    main_estimate, point_estimate, coef_estimates) {
+    data_list, main_estimate, point_estimate, coef_estimates) {
 
   # Standard error of the main estimate
   std_error <- sqrt(coef_estimates$var)
@@ -220,7 +224,8 @@ MLcovar <- function(
     estimate = main_estimate,
     std_err = std_error,
     ci_lower_95 = main_estimate - qnorm(1 - 0.05 / 2) * std_error,
-    ci_upper_95 = main_estimate + qnorm(1 - 0.05 / 2) * std_error
+    ci_upper_95 = main_estimate + qnorm(1 - 0.05 / 2) * std_error,
+    n_elss = .ComputeELSS(data_list$n_ell, coef_estimates)
   )
 
   # Other information necessary for the follow-up analysis
