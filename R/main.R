@@ -17,6 +17,9 @@
 #' @param labeled_set_var_name The name of the variable that indicates whether 
 #'  rows are labeled or not. The variable must be binary.
 #' @param n_boot The number of bootstrap samples. Default is 100.
+#' @param use_full A logical value that indicates whether the full data should
+#'  be used in the proxy model. Default is TRUE. If FALSE, the unlabeled data
+#'  will be used in the proxy model.
 #' @example examples/example-MLcovar.R
 #' @export
 MLcovar <- function(
@@ -24,7 +27,8 @@ MLcovar <- function(
   proxy_model,
   data,
   labeled_set_var_name,
-  n_boot = 100
+  n_boot = 100,
+  use_full = TRUE
 ) {
 
   # Set options 
@@ -34,7 +38,9 @@ MLcovar <- function(
   data_list <- .SplitData(data, labeled_set_var_name)
 
   # Get combined estimate
-  point_estimate <- .GetPointEstimates(main_model, proxy_model, data_list)
+  point_estimate <- .GetPointEstimates(
+    main_model, proxy_model, data_list, use_full
+  )
 
   # Naive bootstrap implementation
   boot_estimates <- .RunBootstrap(
@@ -57,7 +63,7 @@ MLcovar <- function(
 }
 
 
-.GetPointEstimates <- function(main_model, proxy_model, data_list) {
+.GetPointEstimates <- function(main_model, proxy_model, data_list, use_full) {
 
   # Unbiased estimator
   tau_ell <- main_model(data_list$dat_labeled)
@@ -68,7 +74,13 @@ MLcovar <- function(
 
   # Biased estimators
   delta_ell <- proxy_model(data_list$dat_labeled)
-  delta_full <- proxy_model(data_list$dat_full)
+
+  if (isTRUE(use_full)) {
+    delta_full <- proxy_model(data_list$dat_full)
+  } else {
+    delta_full <- proxy_model(data_list$dat_unlabeled)
+  }
+
   delta_diff <- as.vector(delta_ell) - as.vector(delta_full)
   
   # Return estimates

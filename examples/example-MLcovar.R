@@ -1,7 +1,7 @@
 # Generate data
 set.seed(1234)
-n_ell <- 20
-n_u <- 1000
+n_ell <- 50
+n_u <- 5000
 n_all <- n_ell + n_u
 
 # true model
@@ -9,8 +9,12 @@ X <- rnorm(n_all)
 Y <- 0.5 + X + rnorm(n_all, mean = 0, sd = 0.3)
 
 # Add noise to the outcome to create proxy variable
+# Y_proxy are Y with non-classical measurement errors
 Y_proxy_1 <- Y + rnorm(n_all, mean = X / X^2, sd = 0.1)
-Y_proxy_2 <- Y + rnorm(n_all, mean = 0, sd = 0.1)
+Y_proxy_2 <- as.numeric(Y > 0)
+
+cor(Y, Y_proxy_1)
+cor(Y, Y_proxy_2)
 
 # Create a data frame
 df_test <- data.frame(
@@ -83,3 +87,7 @@ sqrt(diag(fit_12$additional_info$coef_estimates$vcov))[1]
 
 # Compare with lm outputs
 summary(lm(Y ~ X, data = df_test))$coef[2, 1:2]
+
+# Biased estimates
+summary(lm(Y_proxy_1 ~ X, data = df_test))$coef[2, 1:2]
+summary(lm(Y_proxy_2 ~ X, data = df_test))$coef[2, 1:2]
