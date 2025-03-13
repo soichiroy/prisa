@@ -44,7 +44,7 @@ MLcovar <- function(
 
   # Naive bootstrap implementation
   boot_estimates <- .RunBootstrap(
-    main_model, proxy_model, data_list, n_boot, length(point_estimate)
+    main_model, proxy_model, data_list, n_boot, length(point_estimate), use_full
   )
 
   # Estimate optimal coefficients and variance
@@ -141,13 +141,14 @@ MLcovar <- function(
 }
 
 .RunBootstrap <- function(
-    main_model, proxy_model, data_list, n_boot, n_estimates) {
+    main_model, proxy_model, data_list, n_boot, n_estimates, use_full) {
   # TODO: implement parallel processing
   boot_estimate <- matrix(NA, nrow = n_boot, ncol = n_estimates)
   for (i in seq_len(n_boot)) {
     data_list_resampled <- .ConditionalSampling(data_list)
-    point_estimate_resampled <-
-      .GetPointEstimates(main_model, proxy_model, data_list_resampled)
+    point_estimate_resampled <- .GetPointEstimates(
+      main_model, proxy_model, data_list_resampled, use_full
+    )
     boot_estimate[i, ] <- point_estimate_resampled
   }
   return(boot_estimate)

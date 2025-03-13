@@ -54,7 +54,10 @@ Y <- 0.5 + X + rnorm(n_all, mean = 0, sd = 0.3)
 # Add noise to the outcome to create proxy variable
 # Y_proxy are Y with non-classical measurement errors
 Y_proxy_1 <- Y + rnorm(n_all, mean = X / X^2, sd = 0.1)
-Y_proxy_2 <- I(Y > 0)
+Y_proxy_2 <- as.numeric(Y > 0)
+
+cor(Y, Y_proxy_1)
+cor(Y, Y_proxy_2)
 
 # Create a data frame
 df_test <- data.frame(
