@@ -16,6 +16,9 @@
 #'   argument.
 #' @param labeled_set_var_name The name of the variable that indicates whether 
 #'  rows are labeled or not. The variable must be binary.
+#' @param n_boot The number of bootstrap samples. Default is 100.
+#' @example examples/example-MLcovar.R
+#' @export
 MLcovar <- function(
   main_model,
   proxy_model,
@@ -34,7 +37,9 @@ MLcovar <- function(
   point_estimate <- .GetPointEstimates(main_model, proxy_model, data_list)
 
   # Naive bootstrap implementation
-  boot_estimates <- .RunBootstrap(data_list, n_boot, length(point_estimate))
+  boot_estimates <- .RunBootstrap(
+    main_model, proxy_model, data_list, n_boot, length(point_estimate)
+  )
 
   # Estimate optimal coefficients and variance
   coef_estimates <- .EstimateOptimalCoefficients(boot_estimates)
@@ -43,9 +48,7 @@ MLcovar <- function(
   main_estimate <- .CombineEstimates(point_estimate, coef_estimates$coef)
 
   # Prepare output
-  output <- .FormatOutput(
-    main_estimate, point_estimate, boot_estimates, coef_estimates
-  )
+  output <- .FormatOutput(main_estimate, point_estimate, coef_estimates)
 
   return(output)
 }
@@ -121,7 +124,8 @@ MLcovar <- function(
 }
 
 
-.RunBootstrap <- function(data_list, n_boot, n_estimates) {
+.RunBootstrap <- function(
+    main_model, proxy_model, data_list, n_boot, n_estimates) {
   # TODO: implement parallel processing
   boot_estimate <- matrix(NA, nrow = n_boot, ncol = n_estimates)
   for (i in seq_len(n_boot)) {
@@ -148,21 +152,24 @@ MLcovar <- function(
     # When the proxy estimator is also a scalar, the optimal coefficient is
     # given by Cov(tau_ell, delta_diff) / Var(delta_diff).
     coef_estimates <- cov_estimates[1, 2] / cov_estimates[2, 2]
-    return(coef_estimates)
+
+    # Estimate variance
+    var_est <- .EstimateVariance(cov_estimates) 
+    return(list(coef = coef_estimates, var = var_est, vcov = cov_estimates))
   }
 
   # Variance of the proxy estimators
-  # - This operation assume the order of estimates in the object.
+  # - This operation assumes the order of estimates in the object.
   var_diff <- cov_estimates[2:n_elements, 2:n_elements]
 
   # Covariance between the main and proxy model estimates
-  cov_main_proxy <- as.vector(cov_estimates[1, ])
+  cov_main_proxy <- as.vector(cov_estimates[1, -1])
 
   # Optimal coefficients
   coef_estimates <- as.vector(solve(var_diff, cov_main_proxy))
 
   # This check can be deleted
-  if (length(coef_estimates) == (n_elements - 1)) {
+  if (length(coef_estimates) != (n_elements - 1)) {
     stop(
       "The number of coefficients does not match the number of proxy estimates."
     )
@@ -171,18 +178,10 @@ MLcovar <- function(
   # Estimate variance
   var_est <- .EstimateVariance(cov_estimates) 
 
-  return(list(coef = coef_estimates, var = var_est))
+  return(list(coef = coef_estimates, var = var_est, vcov = cov_estimates))
 }
 
 
-.CombineEstimates <- function(point_estimate, coef_estimates) {
-  tau_ell <- point_estimate[1]
-  delta_diff <- point_estimate[-1]
-
-  # Proposed estimator: unbiased + coef * (cv_estimators)
-  combined_estimate <- tau_ell + as.vector(coef_estimates %*% delta_diff) 
-  return(combined_estimate)
-}
 
 .EstimateVariance <- function(vcov_estimate) {
 
@@ -196,14 +195,22 @@ MLcovar <- function(
   }
 
   var_reduction_part <- as.vector(
-    vcov_estimate[1, ] %*% solve(vcov_estimate[-1, -1], vcov_estimate[-1, ])
+    vcov_estimate[1, -1] %*% solve(vcov_estimate[-1, -1], vcov_estimate[1, -1])
   )
   return(var_tau_ell - var_reduction_part)
 }
 
+.CombineEstimates <- function(point_estimate, coef_estimates) {
+  tau_ell <- point_estimate[1]
+  delta_diff <- point_estimate[-1]
+
+  # Proposed estimator: unbiased + coef * (cv_estimators)
+  combined_estimate <- tau_ell + as.vector(coef_estimates %*% delta_diff) 
+  return(combined_estimate)
+}
 
 .FormatOutput <- function(
-    main_estimate, point_estimate, boot_estimates, coef_estimates) {
+    main_estimate, point_estimate, coef_estimates) {
 
   # Standard error of the main estimate
   std_error <- sqrt(coef_estimates$var)
@@ -218,9 +225,8 @@ MLcovar <- function(
 
   # Other information necessary for the follow-up analysis
   output_quantities <- list(
-    boot_estimates = boot_estimates,
-    point_estimate = point_estimate,
     main_estimate = main_estimate,
+    point_estimate = point_estimate,
     coef_estimates = coef_estimates
   )
   
