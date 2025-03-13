@@ -1,5 +1,3 @@
-
-
 #' Compute Effective Label Sample Size (ELSS)
 #' @noRd 
 .ComputeELSS <- function(n_ell, coef_estimates) {

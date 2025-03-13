@@ -128,7 +128,6 @@ MLcovar <- function(
   ))
 }
 
-
 .RunBootstrap <- function(
     main_model, proxy_model, data_list, n_boot, n_estimates) {
   # TODO: implement parallel processing
@@ -185,8 +184,6 @@ MLcovar <- function(
 
   return(list(coef = coef_estimates, var = var_est, vcov = cov_estimates))
 }
-
-
 
 .EstimateVariance <- function(vcov_estimate) {
 
