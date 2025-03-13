@@ -102,15 +102,15 @@ fit_12 <- MLcovar(
 )
 
 # Result with a noisy proxy
-fit_1$estimates
+summary(fit_1)
 sqrt(diag(fit_1$additional_info$coef_estimates$vcov))[1]
 
 # Result with a good proxy
-fit_2$estimates
+summary(fit_2)
 sqrt(diag(fit_2$additional_info$coef_estimates$vcov))[1]
 
 # Results with two proxies
-fit_12$estimates
+summary(fit_12)
 sqrt(diag(fit_12$additional_info$coef_estimates$vcov))[1]
 
 # Compare with lm outputs

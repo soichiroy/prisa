@@ -52,6 +52,7 @@ MLcovar <- function(
     data_list, main_estimate, point_estimate, coef_estimates
   )
 
+  class(output) <- c(class(output), "MLcovar")
   return(output)
 }
 
