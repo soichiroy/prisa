@@ -23,8 +23,8 @@ df_test <- data.frame(
   Y_proxy_2 = Y_proxy_2,
   X = X,
   is_labeled = c(rep(1, n_ell), rep(0, n_u))
-) %>%
-  mutate(Y = if_else(is_labeled == 1, Y, NA_real_))
+) |> 
+  dplyr::mutate(Y = dplyr::if_else(is_labeled == 1, Y, NA_real_))
 
 # Prepare functions for the analysis
 fn_main <- function(df) {

@@ -77,18 +77,18 @@ fn_main <- function(df) {
 
 fn_proxy_1 <- function(df) {
   fit <- lm(Y_proxy_1 ~ X, data = df)
-  return(fit$coef[2])
+  return(fit$coef)
 }
 
 fn_proxy_2 <- function(df) {
   fit <- lm(Y_proxy_2 ~ X, data = df)
-  return(fit$coef[2])
+  return(fit$coef)
 }
 
 fn_proxy_1_and_2 <- function(df) {
   fit1 <- lm(Y_proxy_1 ~ X, data = df)
   fit2 <- lm(Y_proxy_2 ~ X, data = df)
-  return(c(fit1$coef[2], fit2$coef[2]))
+  return(c(fit1$coef, fit2$coef))
 }
 
 # Run functions
