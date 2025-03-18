@@ -2,7 +2,6 @@
 #' @noRd 
 .ComputeELSS <- function(n_ell, coef_estimates) {
   var_unadjusted <- diag(coef_estimates$vcov)[1]
-  delta <- 1 - coef_estimates$var / var_unadjusted
-  n_elss <- n_ell / (1 - delta) 
+  n_elss <- n_ell * var_unadjusted / coef_estimates$var
   return(n_elss)
 }

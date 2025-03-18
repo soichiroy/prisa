@@ -10,7 +10,7 @@ Y <- 0.5 + X + rnorm(n_all, mean = 0, sd = 0.3)
 
 # Add noise to the outcome to create proxy variable
 # Y_proxy are Y with non-classical measurement errors
-Y_proxy_1 <- Y + rnorm(n_all, mean = X / X^2, sd = 0.1)
+Y_proxy_1 <- Y + rnorm(n_all, mean = X, sd = 0.1)
 Y_proxy_2 <- as.numeric(Y > 0)
 
 cor(Y, Y_proxy_1)
@@ -73,11 +73,11 @@ fit_12 <- MLcovar(
   n_boot = 100
 )
 
-# Result with a noisy proxy
+# Result with a good proxy
 summary(fit_1)
 sqrt(diag(fit_1$additional_info$coef_estimates$vcov))[1]
 
-# Result with a good proxy
+# Result with a noisy proxy
 summary(fit_2)
 sqrt(diag(fit_2$additional_info$coef_estimates$vcov))[1]
 
@@ -86,8 +86,10 @@ summary(fit_12)
 sqrt(diag(fit_12$additional_info$coef_estimates$vcov))[1]
 
 # Compare with lm outputs
+# Sample size: n_ell
 summary(lm(Y ~ X, data = df_test))$coef[2, 1:2]
 
 # Biased estimates
+# Sample size: n_all
 summary(lm(Y_proxy_1 ~ X, data = df_test))$coef[2, 1:2]
 summary(lm(Y_proxy_2 ~ X, data = df_test))$coef[2, 1:2]
