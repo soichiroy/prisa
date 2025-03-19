@@ -210,6 +210,10 @@ MLcovar <- function(
 #    # Estimate variance of the combined estimator
 #    var_tau_ell <- vcov_labeled[1, 1]
 #    var_est <- var_tau_ell - prop * (1 - prop) * vcov_labeled[1, 2]^2 / vcov_full
+#    var_theoretical_limit <- prop * var_tau_ell
+#	   if (var_est < var_theoretical_limit) {
+#	  	 var_est <- var_theoretical_limit
+#	   }
 #    elss <- n_ell * var_tau_ell / var_est
 #    return(list(coef = coef_estimates, var = var_est, elss = elss))
 #  }
@@ -230,6 +234,10 @@ MLcovar <- function(
   # Estimate variance of the combined estimator
   var_tau_ell <- vcov_labeled[1, 1]
   var_est <- var_tau_ell - prop * (1 - prop) * cov_main_proxy %*% solve(vcov_full, cov_main_proxy)
+  var_theoretical_limit <- prop * var_tau_ell
+  if (var_est < var_theoretical_limit) {
+  	var_est <- var_theoretical_limit
+  }
   elss <- n_ell * var_tau_ell / var_est
 
   list(
