@@ -1,6 +1,6 @@
 # Generate data
 set.seed(1234)
-n_ell <- 50
+n_ell <- 200
 n_u <- 5000
 n_all <- n_ell + n_u
 
@@ -54,7 +54,10 @@ fit_1 <- MLcovar(
   proxy_model = fn_proxy_1,
   data = df_test,
   labeled_set_var_name = "is_labeled",
-  n_boot = 100
+  n_boot = 5000,
+  n_boot2 = 2000,
+  use_full = TRUE,
+  boot_full = TRUE
 )
 
 fit_2 <- MLcovar(
