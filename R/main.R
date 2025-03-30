@@ -56,18 +56,34 @@ MLcovar <- function(
 
   # Naive bootstrap implementation
   cov_estimates <- .RunBootstrap(
-    main_model, proxy_model, data_list, n_boot, n_boot2, point_estimate$n_estimates_labeled, point_estimate$n_estimates_full, use_full, boot_full
+    main_model,
+    proxy_model,
+    data_list,
+    n_boot,
+    n_boot2,
+    point_estimate$n_estimates_labeled,
+    point_estimate$n_estimates_full,
+    use_full,
+    boot_full
   )
 
   # Estimate optimal coefficients and variance
-  coef_estimates <- .EstimateOptimalCoefficients(cov_estimates, prop, data_list$n_ell, use_full, boot_full)
+  coef_estimates <- .EstimateOptimalCoefficients(
+    cov_estimates, prop, data_list$n_ell, use_full, boot_full
+  )
 
   # Combine estimates
-  main_estimate <- .CombineEstimates(point_estimate$estimates, coef_estimates$coef)
+  main_estimate <- .CombineEstimates(
+    point_estimate$estimates, coef_estimates$coef
+  )
 
   # Prepare output
   output <- .FormatOutput(
-    main_estimate, point_estimate$estimates, coef_estimates, cov_estimates, data_list
+    main_estimate,
+    point_estimate$estimates,
+    coef_estimates,
+    cov_estimates,
+    data_list
   )
 
   class(output) <- c(class(output), "MLcovar")
@@ -105,7 +121,8 @@ MLcovar <- function(
   )
 }
 
-.GetPointEstimatesLabeled <- function(main_model, proxy_model, data_labeled_resampled) {
+.GetPointEstimatesLabeled <- function(
+    main_model, proxy_model, data_labeled_resampled) {
 
   # Unbiased estimator
   tau_ell <- main_model(data_labeled_resampled)
@@ -189,7 +206,8 @@ MLcovar <- function(
 #' 
 #' @param cov_estimates A list of bootstrap variance-covariance estimates.
 #' @noRd
-.EstimateOptimalCoefficients <- function(cov_estimates, prop, n_ell, use_full, boot_full) {
+.EstimateOptimalCoefficients <- function(
+    cov_estimates, prop, n_ell, use_full, boot_full) {
 	vcov_labeled <- cov_estimates$vcov_labeled
 	vcov_full <- cov_estimates$vcov_full
   n_elements <- ncol(cov_estimates$vcov_labeled)
@@ -233,7 +251,8 @@ MLcovar <- function(
 
   # Estimate variance of the combined estimator
   var_tau_ell <- vcov_labeled[1, 1]
-  var_est <- var_tau_ell - prop * (1 - prop) * cov_main_proxy %*% solve(vcov_full, cov_main_proxy)
+  var_est <- var_tau_ell - 
+    prop * (1 - prop) * cov_main_proxy %*% solve(vcov_full, cov_main_proxy)
   var_theoretical_limit <- prop * var_tau_ell
   if (var_est < var_theoretical_limit) {
   	var_est <- var_theoretical_limit
