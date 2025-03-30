@@ -46,13 +46,9 @@ MLcovar <- function(
   # Split data into labeled and unlabeled sets
   data_list <- .SplitData(data, labeled_set_var_name)
 
-  # Proportion of the labeled data
-  prop <- data_list$n_ell / data_list$n_full
-
   # Get combined estimate
-  point_estimate <- .GetPointEstimates(
-    main_model, proxy_model, data_list, use_full
-  )
+  point_estimate <- 
+    .GetPointEstimates(main_model, proxy_model, data_list, use_full)
 
   # Naive bootstrap implementation
   cov_estimates <- .RunBootstrap(
@@ -91,7 +87,6 @@ MLcovar <- function(
 }
 
 .GetPointEstimates <- function(main_model, proxy_model, data_list, use_full) {
-
   # Unbiased estimator
   tau_ell <- main_model(data_list$dat_labeled)
 
@@ -108,9 +103,10 @@ MLcovar <- function(
     delta_full <- proxy_model(data_list$dat_unlabeled)
   }
 
+  # Create control variate estimators
   delta_diff <- as.vector(delta_ell) - as.vector(delta_full)
   
-  # Return estimates
+  # Return estimates: Assume the first element is the main model estimate
   estimates <- c(tau_ell, delta_diff)
   n_estimates_labeled <- length(estimates)
   n_estimates_full <- length(delta_diff)
@@ -122,7 +118,8 @@ MLcovar <- function(
 }
 
 .GetPointEstimatesLabeled <- function(
-    main_model, proxy_model, data_labeled_resampled) {
+    main_model, proxy_model, data_labeled_resampled
+) {
 
   # Unbiased estimator
   tau_ell <- main_model(data_labeled_resampled)
@@ -148,57 +145,73 @@ MLcovar <- function(
   unlabeled_set <- data %>%
     filter(!!sym(labeled_set_var_name) == 0)
 
+  n_ell <- nrow(dat_labeled)
+  n_full <- nrow(data)
+  prop <- n_ell / n_full
   list(
     dat_labeled = dat_labeled,
     dat_unlabeled = unlabeled_set,
     dat_full = data,
-    n_ell = nrow(dat_labeled),
-    n_full = nrow(data)
+    n_ell = n_ell,
+    n_full = n_full,
+    prop = prop
   )
 }
 
 .RunBootstrap <- function(
-    main_model, proxy_model, data_list, n_boot, n_boot2, n_estimates_labeled, 
-    n_estimates_full, use_full, boot_full) {
+    main_model,
+    proxy_model,
+    data_list,
+    n_boot,
+    n_boot2,
+    n_estimates_labeled, 
+    n_estimates_full,
+    use_full,
+    boot_full) {
+
   # TODO: implement parallel processing
-  # Bootstrap for the labeled data
+  # Bootstrap for the labeled data to estimate the variance-covariance matrix
+  # of the main estimators based on the labeled data.
   boot_estimate_labeled <- matrix(NA, nrow = n_boot, ncol = n_estimates_labeled)
   for (i in seq_len(n_boot)) {
-    data_labeled_resampled <-
+    data_labeled_resampled <- 
       slice_sample(data_list$dat_labeled, prop = 1, replace = TRUE)
-    point_estimate_boot_labeled <- .GetPointEstimatesLabeled(
-      main_model, proxy_model, data_labeled_resampled
-    )
+    point_estimate_boot_labeled <-
+      .GetPointEstimatesLabeled(main_model, proxy_model, data_labeled_resampled)
     boot_estimate_labeled[i, ] <- point_estimate_boot_labeled
   }
 
-  # Estimate variance-covariance matrix of the estimators for the labeled data
   vcov_labeled <- cov(boot_estimate_labeled)
 
-  if (isTRUE(boot_full)) {
-	  # Bootstrap for the full (or unlabeled) data
-	  boot_estimate_full <- matrix(NA, nrow = n_boot2, ncol = n_estimates_full)
-	  for (i in seq_len(n_boot2)) {
-		  if (isTRUE(use_full)) {
-		    data_full_resampled <-
-		      slice_sample(data_list$dat_full, prop = 1, replace = TRUE)
-		  } else {
-		    data_full_resampled <-
-		      slice_sample(data_list$dat_unlabeled, prop = 1, replace = TRUE)
-		  }
-	    boot_estimate_full[i, ] <- proxy_model(data_full_resampled)
-	  }
-	} else {
-		vcov_full <- NULL
-	}
+  if (isFALSE(boot_full)) {
+    return(list(
+      vcov_labeled = vcov_labeled,
+      vcov_full = NULL
+    ))
+  }
 
-  # Estimate variance-covariance matrix of the estimators for the full data
+
+  # Estimate the variance covariance matrix of the biased estimator based on 
+  # the unlabeled data or the full data
+  data_main <- data_list$dat_full
+  if (isFALSE(use_full)) {
+    data_main <- data_list$dat_unlabeled
+  }
+
+  # Bootstrap for the full (or unlabeled) data
+  boot_estimate_full <- matrix(NA, nrow = n_boot2, ncol = n_estimates_full)
+  for (i in seq_len(n_boot2)) {
+    data_main_resampled <- slice_sample(data_main, prop = 1, replace = TRUE)
+    boot_estimate_full[i, ] <- proxy_model(data_main_resampled)
+  }
   vcov_full <- cov(boot_estimate_full)
 
   # Return bootstrapped variance-covariance estimates
-  list(
-  	vcov_labeled = vcov_labeled, 
-  	vcov_full = vcov_full
+  return(
+    list(
+      vcov_labeled = vcov_labeled,
+      vcov_full = vcov_full
+    )
   )
 }
 
