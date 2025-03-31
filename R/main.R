@@ -65,7 +65,7 @@ MLcovar <- function(
 
   # Estimate optimal coefficients and variance
   coef_estimates <- .EstimateOptimalCoefficients(
-    cov_estimates, prop, data_list$n_ell, use_full, boot_full
+    cov_estimates, data_list$prop, data_list$n_ell, use_full
   )
 
   # Combine estimates
@@ -183,6 +183,7 @@ MLcovar <- function(
 
   vcov_labeled <- cov(boot_estimate_labeled)
 
+  # Exist the function if boot_full is FALSE.
   if (isFALSE(boot_full)) {
     return(list(
       vcov_labeled = vcov_labeled,
@@ -219,63 +220,43 @@ MLcovar <- function(
 #' 
 #' @param cov_estimates A list of bootstrap variance-covariance estimates.
 #' @noRd
-.EstimateOptimalCoefficients <- function(
-    cov_estimates, prop, n_ell, use_full, boot_full) {
+.EstimateOptimalCoefficients <- function(cov_estimates, prop, n_ell, use_full) {
 	vcov_labeled <- cov_estimates$vcov_labeled
 	vcov_full <- cov_estimates$vcov_full
-  n_elements <- ncol(cov_estimates$vcov_labeled)
-	if(isFALSE(boot_full)) {
-		if(isTRUE(use_full)) {
-			# Estimate variance of the estimators for the full data
-			vcov_full <- prop * vcov_labeled[2:n_elements, 2:n_elements]
-		} else {
-			# Estimate variance of the estimators for the unlabeled data
-			vcov_full <- prop / (1 - prop) * vcov_labeled[2:n_elements, 2:n_elements]
-		}
-	}
+  if (is.null(vcov_full)) {
+    # Scale the variance: 
+    #   * When the full data is used: n_ell / n_full
+    #   * When the unlabeled data is used: n_ell / (n_full - n_ell)
+    scale_factor <- ifelse(use_full, prop, prop / (1 - prop))
 
-#  if (n_elements == 2) {
-#    # When the proxy estimator is also a scalar
-#    coef_estimates <- prop * vcov_labeled[1, 2] / vcov_full
-#
-#    # Estimate variance of the combined estimator
-#    var_tau_ell <- vcov_labeled[1, 1]
-#    var_est <- var_tau_ell - prop * (1 - prop) * vcov_labeled[1, 2]^2 / vcov_full
-#    var_theoretical_limit <- prop * var_tau_ell
-#	   if (var_est < var_theoretical_limit) {
-#	  	 var_est <- var_theoretical_limit
-#	   }
-#    elss <- n_ell * var_tau_ell / var_est
-#    return(list(coef = coef_estimates, var = var_est, elss = elss))
-#  }
+		# Estimate variance of the estimators for the full (or unlabeled) data
+		vcov_full <- scale_factor * vcov_labeled[-1, -1] 
+  }
 
   # Covariance between the main and proxy model estimates
+  #  * [1,1] element is the variance of the main unbiased estimator 
   cov_main_proxy <- as.vector(vcov_labeled[1, -1])
 
   # Optimal coefficients
-  coef_estimates <- as.vector(prop * (1 - prop) * solve(vcov_full, cov_main_proxy))
-
-  # This check can be deleted
-  if (length(coef_estimates) != (n_elements - 1)) {
-    stop(
-      "The number of coefficients does not match the number of proxy estimates."
-    )
-  }
+  coef_estimates <-
+    prop * (1 - prop) * as.vector(solve(vcov_full, cov_main_proxy))
 
   # Estimate variance of the combined estimator
   var_tau_ell <- vcov_labeled[1, 1]
-  var_est <- var_tau_ell - 
-    prop * (1 - prop) * cov_main_proxy %*% solve(vcov_full, cov_main_proxy)
+  var_est <- var_tau_ell - cov_main_proxy %*% coef_estimates 
   var_theoretical_limit <- prop * var_tau_ell
   if (var_est < var_theoretical_limit) {
   	var_est <- var_theoretical_limit
   }
+
   elss <- n_ell * var_tau_ell / var_est
 
-  list(
-  	coef = coef_estimates, 
-  	var = var_est, 
-  	elss = elss
+  return(
+    list(
+      coef = coef_estimates, 
+      var = var_est, 
+      elss = elss
+    )
   )
 }
 
@@ -285,7 +266,7 @@ MLcovar <- function(
 
   # Proposed estimator: unbiased + coef * (cv_estimators)
   combined_estimate <- tau_ell - as.vector(coef_estimates %*% delta_diff) 
-  combined_estimate
+  return(combined_estimate)
 }
 
 .FormatOutput <- function(
