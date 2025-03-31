@@ -291,5 +291,5 @@ MLcovar <- function(
     cov_estimates = cov_estimates
   )
   
-  list(estimates = main_df, additional_info = output_quantities)
+  return(list(estimates = main_df, additional_info = output_quantities))
 }
