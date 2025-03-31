@@ -224,13 +224,15 @@ MLcovar <- function(
 	vcov_labeled <- cov_estimates$vcov_labeled
 	vcov_full <- cov_estimates$vcov_full
   if (is.null(vcov_full)) {
-    # Scale the variance: 
-    #   * When the full data is used: n_ell / n_full
-    #   * When the unlabeled data is used: n_ell / (n_full - n_ell)
+    # Scale the variance of the labeled set estimator: 
+    #   * When the full data is used for estimating the proxy estimator
+    #     the variance should be scaled by n_ell / n_full
+    #   * When the unlabeled data is used for proxy : n_ell / (n_full - n_ell)
     scale_factor <- ifelse(use_full, prop, prop / (1 - prop))
 
-		# Estimate variance of the estimators for the full (or unlabeled) data
-		vcov_full <- scale_factor * vcov_labeled[-1, -1] 
+		# Estimate variance of the proxy estimators	by scaling the variance estimate
+    # of the labeled set.
+    vcov_full <- scale_factor * vcov_labeled[-1, -1] 
   }
 
   # Covariance between the main and proxy model estimates

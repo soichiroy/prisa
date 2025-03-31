@@ -9,8 +9,10 @@ MLcovar(
   proxy_model,
   data,
   labeled_set_var_name,
-  n_boot = 100,
-  use_full = TRUE
+  n_boot = 500,
+  n_boot2 = 100,
+  use_full = TRUE,
+  boot_full = TRUE
 )
 }
 \arguments{
@@ -31,11 +33,20 @@ argument.}
 \item{labeled_set_var_name}{The name of the variable that indicates whether
 rows are labeled or not. The variable must be binary.}
 
-\item{n_boot}{The number of bootstrap samples. Default is 100.}
+\item{n_boot}{The number of bootstrap samples for the labeled data. Default
+is 500.}
+
+\item{n_boot2}{The number of bootstrap samples for the full data. Default is
+100.}
 
 \item{use_full}{A logical value that indicates whether the full data should
 be used in the proxy model. Default is TRUE. If FALSE, the unlabeled data
 will be used in the proxy model.}
+
+\item{boot_full}{A logical value that indicates whether the full data should
+be used in estimating the variance of the parameters with the proxy
+variables for the full data. Default is TRUE. If FALSE, the unlabeled data
+will be used. This option also affects point estimates.}
 }
 \description{
 Proposed estimator
@@ -43,7 +54,7 @@ Proposed estimator
 \examples{
 # Generate data
 set.seed(1234)
-n_ell <- 50
+n_ell <- 200
 n_u <- 5000
 n_all <- n_ell + n_u
 
@@ -53,7 +64,7 @@ Y <- 0.5 + X + rnorm(n_all, mean = 0, sd = 0.3)
 
 # Add noise to the outcome to create proxy variable
 # Y_proxy are Y with non-classical measurement errors
-Y_proxy_1 <- Y + rnorm(n_all, mean = X / X^2, sd = 0.1)
+Y_proxy_1 <- Y + rnorm(n_all, mean = X, sd = 0.1)
 Y_proxy_2 <- as.numeric(Y > 0)
 
 cor(Y, Y_proxy_1)
@@ -66,8 +77,8 @@ df_test <- data.frame(
   Y_proxy_2 = Y_proxy_2,
   X = X,
   is_labeled = c(rep(1, n_ell), rep(0, n_u))
-) \%>\%
-  mutate(Y = if_else(is_labeled == 1, Y, NA_real_))
+) |> 
+  dplyr::mutate(Y = dplyr::if_else(is_labeled == 1, Y, NA_real_))
 
 # Prepare functions for the analysis
 fn_main <- function(df) {
@@ -97,7 +108,10 @@ fit_1 <- MLcovar(
   proxy_model = fn_proxy_1,
   data = df_test,
   labeled_set_var_name = "is_labeled",
-  n_boot = 100
+  n_boot = 5000,
+  n_boot2 = 2000,
+  use_full = TRUE,
+  boot_full = TRUE
 )
 
 fit_2 <- MLcovar(
@@ -116,11 +130,11 @@ fit_12 <- MLcovar(
   n_boot = 100
 )
 
-# Result with a noisy proxy
+# Result with a good proxy
 summary(fit_1)
 sqrt(diag(fit_1$additional_info$coef_estimates$vcov))[1]
 
-# Result with a good proxy
+# Result with a noisy proxy
 summary(fit_2)
 sqrt(diag(fit_2$additional_info$coef_estimates$vcov))[1]
 
@@ -129,9 +143,11 @@ summary(fit_12)
 sqrt(diag(fit_12$additional_info$coef_estimates$vcov))[1]
 
 # Compare with lm outputs
+# Sample size: n_ell
 summary(lm(Y ~ X, data = df_test))$coef[2, 1:2]
 
 # Biased estimates
+# Sample size: n_all
 summary(lm(Y_proxy_1 ~ X, data = df_test))$coef[2, 1:2]
 summary(lm(Y_proxy_2 ~ X, data = df_test))$coef[2, 1:2]
 }
