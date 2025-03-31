@@ -265,7 +265,7 @@ MLcovar <- function(
   delta_diff <- point_estimate[-1]
 
   # Proposed estimator: unbiased + coef * (cv_estimators)
-  combined_estimate <- tau_ell - as.vector(coef_estimates$coef %*% delta_diff) 
+  combined_estimate <- tau_ell - as.vector(coef_estimates %*% delta_diff) 
   return(combined_estimate)
 }
 
