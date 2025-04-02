@@ -183,7 +183,7 @@ MLcovar <- function(
 
   vcov_labeled <- cov(boot_estimate_labeled)
 
-  # Exist the function if boot_full is FALSE.
+  # Exit the function if boot_full is FALSE.
   if (isFALSE(boot_full)) {
     return(list(
       vcov_labeled = vcov_labeled,
