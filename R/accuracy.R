@@ -1,6 +1,6 @@
 #' Compute ell-value, u-value, and h-value
 #' 
-#' @param result The results from MLcovar function.
+#' @param result an object of class “MLcovar”, usually, a result of a call to \code{\link{MLcovar}}.
 #' @param zeta The vector of variance reduction factor ([0, 1]). Default is seq(from = 0, to = 0.8, by = 0.05).
 #' @example examples/example-accuracy.R
 #' @export
@@ -27,14 +27,16 @@ accuracy <- function(
   	uvalue = uvalue,
   	hvalue = hvalue
   )
-  
-  list(
+  output <- list(
   	result = elluhvalues,
   	n = n,
   	n_ell = n_ell,
   	elss = elss,
   	r_sq = R_sq
   )
+
+  class(output) <- c(class(output), "accuracy")
+  output
 }
 
 #' @noRd 
