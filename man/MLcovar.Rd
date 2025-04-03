@@ -10,7 +10,6 @@ MLcovar(
   data,
   labeled_set_var_name,
   n_boot = 500,
-  n_boot2 = 100,
   use_full = TRUE
 )
 }
@@ -35,12 +34,12 @@ rows are labeled or not. The variable must be binary.}
 \item{n_boot}{The number of bootstrap samples for the labeled data. Default
 is 500.}
 
-\item{n_boot2}{The number of bootstrap samples for the full data. Default is
-100.}
-
 \item{use_full}{A logical value that indicates whether the full data should
 be used in the proxy model. Default is TRUE. If FALSE, the unlabeled data
 will be used in the proxy model.}
+
+\item{n_boot2}{The number of bootstrap samples for the full data. Default is
+100.}
 }
 \description{
 Proposed estimator
@@ -92,7 +91,6 @@ fit_1 <- MLcovar(
   data = df_test,
   labeled_set_var_name = "is_labeled",
   n_boot = 5000,
-  n_boot2 = 2000,
   use_full = TRUE
 )
 summary(fit_1)
@@ -103,8 +101,7 @@ fit_1_use_ell <- MLcovar(
   data = df_test,
   labeled_set_var_name = "is_labeled",
   n_boot = 5000,
-  n_boot2 = 2000,
-  use_full = TRUE
+  use_full = FALSE
 )
 summary(fit_1_use_ell)
 
@@ -122,7 +119,6 @@ fit_12 <- MLcovar(
   data = df_test,
   labeled_set_var_name = "is_labeled",
   n_boot = 5000,
-  n_boot2 = 2000,
   use_full = FALSE
 )
 

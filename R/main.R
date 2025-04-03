@@ -31,7 +31,6 @@ MLcovar <- function(
   data,
   labeled_set_var_name,
   n_boot = 500,
-  n_boot2 = 100,
   use_full = TRUE
 ) {
 
@@ -50,7 +49,6 @@ MLcovar <- function(
     proxy_model,
     data_list,
     n_boot,
-    n_boot2,
     point_estimate$n_estimates_labeled,
     point_estimate$n_estimates_full,
     use_full
@@ -156,7 +154,6 @@ MLcovar <- function(
     proxy_model,
     data_list,
     n_boot,
-    n_boot2,
     n_estimates_labeled, 
     n_estimates_full,
     use_full) {
@@ -189,18 +186,26 @@ MLcovar <- function(
   data_main <- data_list$dat_full
 
   # Bootstrap for the full (or unlabeled) data
-  boot_estimate_full <- matrix(NA, nrow = n_boot2, ncol = n_estimates_full)
-  for (i in seq_len(n_boot2)) {
+  boot_estimate_full <- matrix(NA, nrow = n_boot, ncol = n_estimates_full)
+  for (i in seq_len(n_boot)) {
     data_main_resampled <- slice_sample(data_main, prop = 1, replace = TRUE)
     boot_estimate_full[i, ] <- proxy_model(data_main_resampled)
   }
-  vcov_full <- cov(boot_estimate_full)
+
+  # VCOV(tau_proxy_ell - tau_proxy_full)
+  boot_estimate_diff <- boot_estimate_labeled[, -1] - boot_estimate_full
+  vcov_full <- cov(boot_estimate_diff)
+
+  # Cov(tau_main_ell, tau_proxy_ell - tau_proxy_full)
+  vcov_main_diff <- 
+    as.vector(cov(boot_estimate_labeled[, 1], boot_estimate_diff))
 
   # Return bootstrapped variance-covariance estimates
   return(
     list(
       vcov_labeled = vcov_labeled,
-      vcov_full = vcov_full
+      vcov_full = vcov_full,
+      vcov_main_diff = vcov_main_diff
     )
   )
 }
@@ -221,8 +226,8 @@ MLcovar <- function(
   if (!is.null(vcov_full)) {
     # When the vcov_full is available, estimate the coefficient using the 
     # following formula:
-    #   A* = prop * Cov(tau_proxy_ell, tau_main_ell) / V(tau_proxy_full)
-    coef_estimates <- prop * as.vector(solve(vcov_full, cov_main_proxy))
+    #   A* = Cov(tau_main_ell, tau_proxy_diff) / V(tau_proxy_diff)
+    coef_estimates <- as.vector(solve(vcov_full, cov_estimates$vcov_main_diff))
     return(coef_estimates)
   }
 
@@ -253,11 +258,16 @@ MLcovar <- function(
   # Variance of the original estimator
   var_tau_ell <- vcov_labeled[1, 1]
 
-  # Variance of the proposed estimator:
-  #   Additional (1 - prop) scaling because cov_main_proxy is based on the
-  #   labeled data.
-  var_est <- var_tau_ell - 
-    (1 - prop) * as.vector(cov_main_proxy %*% coef_estimates) 
+  if (is.null(cov_estimates$vcov_full)) {
+    # Variance of the proposed estimator:
+    #   Additional (1 - prop) scaling because cov_main_proxy is based on the
+    #   labeled data.
+    var_est <- var_tau_ell - 
+      (1 - prop) * as.vector(cov_main_proxy %*% coef_estimates) 
+  } else {
+    var_est <- var_tau_ell - 
+      as.vector(cov_estimates$vcov_main_diff %*% coef_estimates)
+  }
 
   var_theoretical_limit <- prop * var_tau_ell
   if (var_est < var_theoretical_limit) {

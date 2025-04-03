@@ -44,7 +44,6 @@ fit_1 <- MLcovar(
   data = df_test,
   labeled_set_var_name = "is_labeled",
   n_boot = 5000,
-  n_boot2 = 2000,
   use_full = TRUE
 )
 summary(fit_1)
@@ -55,7 +54,6 @@ fit_1_use_ell <- MLcovar(
   data = df_test,
   labeled_set_var_name = "is_labeled",
   n_boot = 5000,
-  n_boot2 = 2000,
   use_full = FALSE
 )
 summary(fit_1_use_ell)
@@ -74,7 +72,6 @@ fit_12 <- MLcovar(
   data = df_test,
   labeled_set_var_name = "is_labeled",
   n_boot = 5000,
-  n_boot2 = 2000,
   use_full = FALSE
 )
 
