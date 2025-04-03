@@ -91,17 +91,6 @@ fn_proxy_1 <- function(df) {
   return(fit$coef)
 }
 
-fn_proxy_2 <- function(df) {
-  fit <- lm(Y_proxy_2 ~ X, data = df)
-  return(fit$coef)
-}
-
-fn_proxy_1_and_2 <- function(df) {
-  fit1 <- lm(Y_proxy_1 ~ X, data = df)
-  fit2 <- lm(Y_proxy_2 ~ X, data = df)
-  return(c(fit1$coef, fit2$coef))
-}
-
 # Run functions
 fit_1 <- MLcovar(
   main_model = fn_main,
@@ -113,41 +102,39 @@ fit_1 <- MLcovar(
   use_full = TRUE,
   boot_full = TRUE
 )
+summary(fit_1)
 
-fit_2 <- MLcovar(
+fit_1_use_ell <- MLcovar(
   main_model = fn_main,
-  proxy_model = fn_proxy_2,
+  proxy_model = fn_proxy_1,
   data = df_test,
   labeled_set_var_name = "is_labeled",
-  n_boot = 100
+  n_boot = 5000,
+  n_boot2 = 2000,
+  use_full = TRUE,
+  boot_full = FALSE
 )
+summary(fit_1_use_ell)
+
+
+# Use the second proxy as well
+fn_proxy_1_and_2 <- function(df) {
+  fit1 <- lm(Y_proxy_1 ~ X, data = df)
+  fit2 <- lm(Y_proxy_2 ~ X, data = df)
+  return(c(fit1$coef, fit2$coef))
+}
 
 fit_12 <- MLcovar(
   main_model = fn_main,
   proxy_model = fn_proxy_1_and_2,
   data = df_test,
   labeled_set_var_name = "is_labeled",
-  n_boot = 100
+  n_boot = 5000,
+  n_boot2 = 2000,
+  use_full = TRUE,
+  boot_full = FALSE
 )
-
-# Result with a good proxy
-summary(fit_1)
-sqrt(diag(fit_1$additional_info$coef_estimates$vcov))[1]
-
-# Result with a noisy proxy
-summary(fit_2)
-sqrt(diag(fit_2$additional_info$coef_estimates$vcov))[1]
 
 # Results with two proxies
 summary(fit_12)
-sqrt(diag(fit_12$additional_info$coef_estimates$vcov))[1]
-
-# Compare with lm outputs
-# Sample size: n_ell
-summary(lm(Y ~ X, data = df_test))$coef[2, 1:2]
-
-# Biased estimates
-# Sample size: n_all
-summary(lm(Y_proxy_1 ~ X, data = df_test))$coef[2, 1:2]
-summary(lm(Y_proxy_2 ~ X, data = df_test))$coef[2, 1:2]
 }
