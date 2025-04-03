@@ -45,8 +45,7 @@ fit_1 <- MLcovar(
   labeled_set_var_name = "is_labeled",
   n_boot = 5000,
   n_boot2 = 2000,
-  use_full = TRUE,
-  boot_full = TRUE
+  use_full = TRUE
 )
 summary(fit_1)
 
@@ -57,8 +56,7 @@ fit_1_use_ell <- MLcovar(
   labeled_set_var_name = "is_labeled",
   n_boot = 5000,
   n_boot2 = 2000,
-  use_full = TRUE,
-  boot_full = FALSE
+  use_full = FALSE
 )
 summary(fit_1_use_ell)
 
@@ -77,8 +75,7 @@ fit_12 <- MLcovar(
   labeled_set_var_name = "is_labeled",
   n_boot = 5000,
   n_boot2 = 2000,
-  use_full = TRUE,
-  boot_full = FALSE
+  use_full = FALSE
 )
 
 # Results with two proxies

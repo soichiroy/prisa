@@ -11,8 +11,7 @@ MLcovar(
   labeled_set_var_name,
   n_boot = 500,
   n_boot2 = 100,
-  use_full = TRUE,
-  boot_full = TRUE
+  use_full = TRUE
 )
 }
 \arguments{
@@ -42,11 +41,6 @@ is 500.}
 \item{use_full}{A logical value that indicates whether the full data should
 be used in the proxy model. Default is TRUE. If FALSE, the unlabeled data
 will be used in the proxy model.}
-
-\item{boot_full}{A logical value that indicates whether the full data should
-be used in estimating the variance of the parameters with the proxy
-variables for the full data. Default is TRUE. If FALSE, the unlabeled data
-will be used. This option also affects point estimates.}
 }
 \description{
 Proposed estimator
@@ -99,8 +93,7 @@ fit_1 <- MLcovar(
   labeled_set_var_name = "is_labeled",
   n_boot = 5000,
   n_boot2 = 2000,
-  use_full = TRUE,
-  boot_full = TRUE
+  use_full = TRUE
 )
 summary(fit_1)
 
@@ -111,8 +104,7 @@ fit_1_use_ell <- MLcovar(
   labeled_set_var_name = "is_labeled",
   n_boot = 5000,
   n_boot2 = 2000,
-  use_full = TRUE,
-  boot_full = FALSE
+  use_full = TRUE
 )
 summary(fit_1_use_ell)
 
@@ -131,8 +123,7 @@ fit_12 <- MLcovar(
   labeled_set_var_name = "is_labeled",
   n_boot = 5000,
   n_boot2 = 2000,
-  use_full = TRUE,
-  boot_full = FALSE
+  use_full = FALSE
 )
 
 # Results with two proxies
