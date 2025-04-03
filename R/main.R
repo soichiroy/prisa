@@ -310,5 +310,5 @@ MLcovar <- function(
     var_estimates = var_estimates
   )
   
-  return(list(estimates = main_df, additional_info = output_quantities))
+  return(list(estimates = main_df, additional_info = output_quantities, data_list = data_list))
 }
