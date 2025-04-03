@@ -17,16 +17,10 @@
 #' @param labeled_set_var_name The name of the variable that indicates whether 
 #'  rows are labeled or not. The variable must be binary.
 #' @param n_boot The number of bootstrap samples for the labeled data. Default 
-#'  is 500.
-#' @param n_boot2 The number of bootstrap samples for the full data. Default is 
-#'  100.
+#'  is 500. When use_full is TRUE, the full data is also used for the bootstrap.
 #' @param use_full A logical value that indicates whether the full data should
 #'  be used in the proxy model. Default is TRUE. If FALSE, the unlabeled data
 #'  will be used in the proxy model.
-#' @param boot_full A logical value that indicates whether the full data should
-#'  be used in estimating the variance of the parameters with the proxy 
-#'  variables for the full data. Default is TRUE. If FALSE, the unlabeled data 
-#'  will be used. This option also affects point estimates.
 #' @example examples/example-MLcovar.R
 #' @export
 MLcovar <- function(
@@ -35,14 +29,9 @@ MLcovar <- function(
   data,
   labeled_set_var_name,
   n_boot = 500,
-  n_boot2 = 100,
-  use_full = TRUE,
-  boot_full = TRUE
+  use_full = TRUE
 ) {
 
-  if (isFALSE(use_full)) {
-    stop("Currently, use_full must be TRUE.")
-  }
   # Set options 
   # option_params <- .SetOptions(n_boot)
 
@@ -50,8 +39,7 @@ MLcovar <- function(
   data_list <- .SplitData(data, labeled_set_var_name)
 
   # Get combined estimate
-  point_estimate <- 
-    .GetPointEstimates(main_model, proxy_model, data_list, use_full)
+  point_estimate <- .GetPointEstimates(main_model, proxy_model, data_list)
 
   # Naive bootstrap implementation
   cov_estimates <- .RunBootstrap(
@@ -59,16 +47,14 @@ MLcovar <- function(
     proxy_model,
     data_list,
     n_boot,
-    n_boot2,
     point_estimate$n_estimates_labeled,
     point_estimate$n_estimates_full,
-    use_full,
-    boot_full
+    use_full
   )
 
   # Estimate optimal coefficients
   coef_estimates <- .EstimateOptimalCoefficients(
-    cov_estimates, data_list$prop, data_list$n_ell, use_full
+    cov_estimates, data_list$prop, data_list$n_ell
   )
 
   # Combine estimates
@@ -94,7 +80,7 @@ MLcovar <- function(
   output
 }
 
-.GetPointEstimates <- function(main_model, proxy_model, data_list, use_full) {
+.GetPointEstimates <- function(main_model, proxy_model, data_list) {
   # Unbiased estimator
   tau_ell <- main_model(data_list$dat_labeled)
 
@@ -104,12 +90,7 @@ MLcovar <- function(
 
   # Biased estimators
   delta_ell <- proxy_model(data_list$dat_labeled)
-
-  if (isTRUE(use_full)) {
-    delta_full <- proxy_model(data_list$dat_full)
-  } else {
-    delta_full <- proxy_model(data_list$dat_unlabeled)
-  }
+  delta_full <- proxy_model(data_list$dat_full)
 
   # Create control variate estimators
   delta_diff <- as.vector(delta_ell) - as.vector(delta_full)
@@ -171,11 +152,9 @@ MLcovar <- function(
     proxy_model,
     data_list,
     n_boot,
-    n_boot2,
     n_estimates_labeled, 
     n_estimates_full,
-    use_full,
-    boot_full) {
+    use_full) {
 
   # TODO: implement parallel processing
   # Bootstrap for the labeled data to estimate the variance-covariance matrix
@@ -192,7 +171,7 @@ MLcovar <- function(
   vcov_labeled <- cov(boot_estimate_labeled)
 
   # Exit the function if boot_full is FALSE.
-  if (isFALSE(boot_full)) {
+  if (isFALSE(use_full)) {
     return(list(
       vcov_labeled = vcov_labeled,
       vcov_full = NULL
@@ -203,23 +182,28 @@ MLcovar <- function(
   # Estimate the variance covariance matrix of the biased estimator based on 
   # the unlabeled data or the full data
   data_main <- data_list$dat_full
-  if (isFALSE(use_full)) {
-    data_main <- data_list$dat_unlabeled
-  }
 
   # Bootstrap for the full (or unlabeled) data
-  boot_estimate_full <- matrix(NA, nrow = n_boot2, ncol = n_estimates_full)
-  for (i in seq_len(n_boot2)) {
+  boot_estimate_full <- matrix(NA, nrow = n_boot, ncol = n_estimates_full)
+  for (i in seq_len(n_boot)) {
     data_main_resampled <- slice_sample(data_main, prop = 1, replace = TRUE)
     boot_estimate_full[i, ] <- proxy_model(data_main_resampled)
   }
-  vcov_full <- cov(boot_estimate_full)
+
+  # VCOV(tau_proxy_ell - tau_proxy_full)
+  boot_estimate_diff <- boot_estimate_labeled[, -1] - boot_estimate_full
+  vcov_full <- cov(boot_estimate_diff)
+
+  # Cov(tau_main_ell, tau_proxy_ell - tau_proxy_full)
+  vcov_main_diff <- 
+    as.vector(cov(boot_estimate_labeled[, 1], boot_estimate_diff))
 
   # Return bootstrapped variance-covariance estimates
   return(
     list(
       vcov_labeled = vcov_labeled,
-      vcov_full = vcov_full
+      vcov_full = vcov_full,
+      vcov_main_diff = vcov_main_diff
     )
   )
 }
@@ -228,7 +212,7 @@ MLcovar <- function(
 #' 
 #' @param cov_estimates A list of bootstrap variance-covariance estimates.
 #' @noRd
-.EstimateOptimalCoefficients <- function(cov_estimates, prop, n_ell, use_full) {
+.EstimateOptimalCoefficients <- function(cov_estimates, prop, n_ell) {
 	vcov_labeled <- cov_estimates$vcov_labeled
   # Covariance between the main and proxy model estimates
   #  * [1,1] element is the variance of the main unbiased estimator 
@@ -236,20 +220,12 @@ MLcovar <- function(
   
   # Variance covariance matrix of the proxy estimator
   vcov_full <- cov_estimates$vcov_full
-  if (isFALSE(use_full) && is.null(vcov_full)) {
-    # See the TODO in the next code block.
-    stop("use_full must be TRUE when boot_full is set to FALSE.")
-  }
 
   if (!is.null(vcov_full)) {
     # When the vcov_full is available, estimate the coefficient using the 
     # following formula:
-    #   A* = prop * Cov(tau_proxy_ell, tau_main_ell) / V(tau_proxy_full)
-    coef_estimates <- prop * as.vector(solve(vcov_full, cov_main_proxy))
-
-    # TODO: Add the correct scaling when use_full is FALSE
-    # * use_full=FALSE:
-    #   A* = (??) * Cov(tau_proxy_ell, tau_main_ell) / V(tau_proxy_unlabeled) 
+    #   A* = Cov(tau_main_ell, tau_proxy_diff) / V(tau_proxy_diff)
+    coef_estimates <- as.vector(solve(vcov_full, cov_estimates$vcov_main_diff))
     return(coef_estimates)
   }
 
@@ -272,8 +248,7 @@ MLcovar <- function(
 #' Estimate the variance of the proposed estimator
 #' 
 #' @noRd
-.EstimateVariance <- function(
-    cov_estimates, coef_estimates, prop, n_ell) {
+.EstimateVariance <- function(cov_estimates, coef_estimates, prop, n_ell) {
   # Variance covariance of the main and proxy estimators
   vcov_labeled <- cov_estimates$vcov_labeled
   cov_main_proxy <- as.vector(vcov_labeled[1, -1])
@@ -281,12 +256,16 @@ MLcovar <- function(
   # Variance of the original estimator
   var_tau_ell <- vcov_labeled[1, 1]
 
-  # Variance of the proposed estimator:
-  #   Additional (1 - prop) scaling because cov_main_proxy is based on the
-  #   labeled data.
-  # TODO: Support use_full = FALSE
-  var_est <- var_tau_ell - 
-    (1 - prop) * as.vector(cov_main_proxy %*% coef_estimates) 
+  if (is.null(cov_estimates$vcov_full)) {
+    # Variance of the proposed estimator:
+    #   Additional (1 - prop) scaling because cov_main_proxy is based on the
+    #   labeled data.
+    var_est <- var_tau_ell - 
+      (1 - prop) * as.vector(cov_main_proxy %*% coef_estimates) 
+  } else {
+    var_est <- var_tau_ell - 
+      as.vector(cov_estimates$vcov_main_diff %*% coef_estimates)
+  }
 
   var_theoretical_limit <- prop * var_tau_ell
   if (var_est < var_theoretical_limit) {
