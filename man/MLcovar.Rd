@@ -32,14 +32,11 @@ argument.}
 rows are labeled or not. The variable must be binary.}
 
 \item{n_boot}{The number of bootstrap samples for the labeled data. Default
-is 500.}
+is 500. When use_full is TRUE, the full data is also used for the bootstrap.}
 
 \item{use_full}{A logical value that indicates whether the full data should
 be used in the proxy model. Default is TRUE. If FALSE, the unlabeled data
 will be used in the proxy model.}
-
-\item{n_boot2}{The number of bootstrap samples for the full data. Default is
-100.}
 }
 \description{
 Proposed estimator
