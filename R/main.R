@@ -163,18 +163,19 @@ MLcovar <- function(
   for (i in seq_len(n_boot)) {
     data_labeled_resampled <- 
       slice_sample(data_list$dat_labeled, prop = 1, replace = TRUE)
-    point_estimate_boot_labeled <-
+    boot_estimate_labeled[i, ] <-
       .GetPointEstimatesLabeled(main_model, proxy_model, data_labeled_resampled)
-    boot_estimate_labeled[i, ] <- point_estimate_boot_labeled
   }
 
   vcov_labeled <- cov(boot_estimate_labeled)
 
-  # Exit the function if boot_full is FALSE.
+  # Exit the function if boot_full is FALSE (skip the bootstrap for the entire
+  # data).
   if (isFALSE(use_full)) {
     return(list(
       vcov_labeled = vcov_labeled,
-      vcov_full = NULL
+      vcov_full = NULL,
+      vcov_main_diff = NULL
     ))
   }
 
@@ -199,12 +200,10 @@ MLcovar <- function(
     as.vector(cov(boot_estimate_labeled[, 1], boot_estimate_diff))
 
   # Return bootstrapped variance-covariance estimates
-  return(
-    list(
-      vcov_labeled = vcov_labeled,
-      vcov_full = vcov_full,
-      vcov_main_diff = vcov_main_diff
-    )
+  list(
+    vcov_labeled = vcov_labeled,
+    vcov_full = vcov_full,
+    vcov_main_diff = vcov_main_diff
   )
 }
 
@@ -233,7 +232,7 @@ MLcovar <- function(
   # estimate the coefficients.
   #  A* = COV(tau_proxy_ell, tau_main_ell) / V(tau_proxy_ell)
   coef_estimates <- as.vector(solve(vcov_labeled[-1, -1], cov_main_proxy))
-  return(coef_estimates)
+  coef_estimates
 }
 
 .CombineEstimates <- function(point_estimate, coef_estimates) {
@@ -242,7 +241,7 @@ MLcovar <- function(
 
   # Proposed estimator: unbiased + coef * (cv_estimators)
   combined_estimate <- tau_ell - as.vector(coef_estimates %*% delta_diff) 
-  return(combined_estimate)
+  combined_estimate
 }
 
 #' Estimate the variance of the proposed estimator
@@ -275,8 +274,7 @@ MLcovar <- function(
 
   # Compute the variance reduction factor in terms of ELSS
   elss <- n_ell * var_tau_ell / var_est
-
-  return(list(var = var_est, elss = elss))
+  list(var = var_est, elss = elss)
 }
 
 #' Format the output of the proposed estimator
@@ -310,5 +308,9 @@ MLcovar <- function(
     var_estimates = var_estimates
   )
   
-  return(list(estimates = main_df, additional_info = output_quantities, data_list = data_list))
+  list(
+    estimates = main_df,
+    additional_info = output_quantities,
+    data_list = data_list
+  )
 }
