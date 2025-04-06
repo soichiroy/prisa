@@ -29,12 +29,12 @@ df_test <- data.frame(
 # Prepare functions for the analysis
 fn_main <- function(df) {
   fit <- lm(Y ~ X, data = df)
-  return(fit$coef[2])
+  fit$coef[2]
 }
 
 fn_proxy_1 <- function(df) {
   fit <- lm(Y_proxy_1 ~ X, data = df)
-  return(fit$coef)
+  fit$coef
 }
 
 # Run functions
@@ -43,8 +43,7 @@ fit_1 <- MLcovar(
   proxy_model = fn_proxy_1,
   data = df_test,
   labeled_set_var_name = "is_labeled",
-  n_boot = 5000,
-  use_full = TRUE
+  options = SetOptions(n_boot = 500, use_full = FALSE)
 )
 summary(fit_1)
 
@@ -53,8 +52,7 @@ fit_1_use_ell <- MLcovar(
   proxy_model = fn_proxy_1,
   data = df_test,
   labeled_set_var_name = "is_labeled",
-  n_boot = 5000,
-  use_full = FALSE
+  options = SetOptions(n_boot = 500, use_full = TRUE)
 )
 summary(fit_1_use_ell)
 
@@ -63,7 +61,7 @@ summary(fit_1_use_ell)
 fn_proxy_1_and_2 <- function(df) {
   fit1 <- lm(Y_proxy_1 ~ X, data = df)
   fit2 <- lm(Y_proxy_2 ~ X, data = df)
-  return(c(fit1$coef, fit2$coef))
+  c(fit1$coef, fit2$coef)
 }
 
 fit_12 <- MLcovar(
@@ -71,8 +69,7 @@ fit_12 <- MLcovar(
   proxy_model = fn_proxy_1_and_2,
   data = df_test,
   labeled_set_var_name = "is_labeled",
-  n_boot = 5000,
-  use_full = FALSE
+  options = SetOptions(n_boot = 500, use_full = FALSE)
 )
 
 # Results with two proxies
