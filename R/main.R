@@ -21,6 +21,8 @@
 #' @param use_full A logical value that indicates whether the full data should
 #'  be used in the proxy model. Default is TRUE. If FALSE, the unlabeled data
 #'  will be used in the proxy model.
+#' @param is_parallel A logical value that indicates whether the bootstrap
+#'  should be run in parallel. Default is TRUE. 
 #' @example examples/example-MLcovar.R
 #' @export
 MLcovar <- function(
@@ -29,11 +31,13 @@ MLcovar <- function(
   data,
   labeled_set_var_name,
   n_boot = 500,
-  use_full = TRUE
+  use_full = TRUE,
+  is_parallel = TRUE,
+  seed_value = 1234
 ) {
 
-  # Set options 
-  # option_params <- .SetOptions(n_boot)
+  if (is.null(seed_value)) stop("seed_value must be provided.")
+  set.seed(seed_value)
 
   # Split data into labeled and unlabeled sets
   data_list <- .SplitData(data, labeled_set_var_name)
@@ -49,7 +53,9 @@ MLcovar <- function(
     n_boot,
     point_estimate$n_estimates_labeled,
     point_estimate$n_estimates_full,
-    use_full
+    use_full,
+    is_parallel = is_parallel,
+    seed_value = seed_value
   )
 
   # Estimate optimal coefficients
@@ -147,6 +153,13 @@ MLcovar <- function(
   )
 }
 
+#' Run bootstrap
+#' 
+#' @importFrom parallel makeCluster stopCluster
+#' @importFrom doParallel registerDoParallel
+#' @importFrom foreach foreach %do% %dopar%
+#' @importFrom doRNG registerDoRNG
+#' @noRd 
 .RunBootstrap <- function(
     main_model,
     proxy_model,
@@ -154,24 +167,39 @@ MLcovar <- function(
     n_boot,
     n_estimates_labeled, 
     n_estimates_full,
-    use_full) {
+    use_full,
+    is_parallel,
+    seed_value) {
 
-  # TODO: implement parallel processing
-  # Bootstrap for the labeled data to estimate the variance-covariance matrix
-  # of the main estimators based on the labeled data.
-  boot_estimate_labeled <- matrix(NA, nrow = n_boot, ncol = n_estimates_labeled)
-  for (i in seq_len(n_boot)) {
-    data_labeled_resampled <- 
-      slice_sample(data_list$dat_labeled, prop = 1, replace = TRUE)
-    boot_estimate_labeled[i, ] <-
-      .GetPointEstimatesLabeled(main_model, proxy_model, data_labeled_resampled)
+
+  # Register parallel backend
+  if (is_parallel) {
+    cl <- parallel::makeCluster(parallel::detectCores() - 1)
+    doParallel::registerDoParallel(cl)
+    doRNG::registerDoRNG(seed_value)
+    on.exit({
+      parallel::stopCluster(cl)
+      foreach::registerDoSEQ()
+    })
+  } else {
+    # When is_parallel is FALSE, use sequential processing
+    foreach::registerDoSEQ()
   }
 
+  # Bootstrap for the labeled data to estimate the variance-covariance matrix
+  # of the main estimators based on the labeled data.
+  boot_estimate_labeled <-
+    foreach(i = seq_len(n_boot), .combine = rbind) %dopar% {
+      data_labeled_resampled <- 
+        slice_sample(data_list$dat_labeled, prop = 1, replace = TRUE)
+      .GetPointEstimatesLabeled(main_model, proxy_model, data_labeled_resampled)
+  }
   vcov_labeled <- cov(boot_estimate_labeled)
 
   # Exit the function if boot_full is FALSE (skip the bootstrap for the entire
   # data).
   if (isFALSE(use_full)) {
+    # Return vcov estimate
     return(list(
       vcov_labeled = vcov_labeled,
       vcov_full = NULL,
@@ -183,12 +211,11 @@ MLcovar <- function(
   # Estimate the variance covariance matrix of the biased estimator based on 
   # the unlabeled data or the full data
   data_main <- data_list$dat_full
-
+  
   # Bootstrap for the full (or unlabeled) data
-  boot_estimate_full <- matrix(NA, nrow = n_boot, ncol = n_estimates_full)
-  for (i in seq_len(n_boot)) {
+  boot_estimate_full <- foreach(i = seq_len(n_boot), .combine = rbind) %dopar% {
     data_main_resampled <- slice_sample(data_main, prop = 1, replace = TRUE)
-    boot_estimate_full[i, ] <- proxy_model(data_main_resampled)
+    proxy_model(data_main_resampled)
   }
 
   # VCOV(tau_proxy_ell - tau_proxy_full)
