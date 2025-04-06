@@ -29,7 +29,8 @@ MLcovar <- function(
   data,
   labeled_set_var_name,
   n_boot = 500,
-  use_full = TRUE
+  use_full = TRUE,
+  is_debug_mode = TRUE
 ) {
 
   # Set options 
@@ -49,7 +50,8 @@ MLcovar <- function(
     n_boot,
     point_estimate$n_estimates_labeled,
     point_estimate$n_estimates_full,
-    use_full
+    use_full,
+    is_debug_mode = is_debug_mode
   )
 
   # Estimate optimal coefficients
@@ -147,6 +149,12 @@ MLcovar <- function(
   )
 }
 
+#' Run bootstrap
+#' 
+#' @importFrom parallel makeCluster stopCluster
+#' @importFrom doParallel registerDoParallel
+#' @importFrom foreach foreach %do% %dopar%
+#' @noRd 
 .RunBootstrap <- function(
     main_model,
     proxy_model,
@@ -154,17 +162,34 @@ MLcovar <- function(
     n_boot,
     n_estimates_labeled, 
     n_estimates_full,
-    use_full) {
+    use_full,
+    is_debug_mode) {
 
   # TODO: implement parallel processing
   # Bootstrap for the labeled data to estimate the variance-covariance matrix
   # of the main estimators based on the labeled data.
-  boot_estimate_labeled <- matrix(NA, nrow = n_boot, ncol = n_estimates_labeled)
-  for (i in seq_len(n_boot)) {
-    data_labeled_resampled <- 
-      slice_sample(data_list$dat_labeled, prop = 1, replace = TRUE)
-    boot_estimate_labeled[i, ] <-
-      .GetPointEstimatesLabeled(main_model, proxy_model, data_labeled_resampled)
+  if (isTRUE(is_debug_mode)) {
+    ## Implement the parallel processing
+    # Register parallel backend
+    num_cores <- parallel::detectCores() - 1
+    cl <- makeCluster(num_cores)
+    registerDoParallel(cl)
+    boot_estimate_labeled <-
+      foreach(i = seq_len(n_boot), .combine = rbind) %dopar% {
+        data_labeled_resampled <- 
+          slice_sample(data_list$dat_labeled, prop = 1, replace = TRUE)
+        .GetPointEstimatesLabeled(main_model, proxy_model, data_labeled_resampled)
+    }
+
+  } else {
+    boot_estimate_labeled <-
+      matrix(NA, nrow = n_boot, ncol = n_estimates_labeled)
+    for (i in seq_len(n_boot)) {
+      data_labeled_resampled <- 
+        slice_sample(data_list$dat_labeled, prop = 1, replace = TRUE)
+      boot_estimate_labeled[i, ] <-
+        .GetPointEstimatesLabeled(main_model, proxy_model, data_labeled_resampled)
+    }
   }
 
   vcov_labeled <- cov(boot_estimate_labeled)
@@ -172,6 +197,13 @@ MLcovar <- function(
   # Exit the function if boot_full is FALSE (skip the bootstrap for the entire
   # data).
   if (isFALSE(use_full)) {
+    if (is_debug_mode) {
+      # clean up the parallel setup
+      stopCluster(cl)
+      foreach::registerDoSEQ()
+    }
+
+    # Return vcov estimate
     return(list(
       vcov_labeled = vcov_labeled,
       vcov_full = NULL,
@@ -185,10 +217,23 @@ MLcovar <- function(
   data_main <- data_list$dat_full
 
   # Bootstrap for the full (or unlabeled) data
-  boot_estimate_full <- matrix(NA, nrow = n_boot, ncol = n_estimates_full)
-  for (i in seq_len(n_boot)) {
-    data_main_resampled <- slice_sample(data_main, prop = 1, replace = TRUE)
-    boot_estimate_full[i, ] <- proxy_model(data_main_resampled)
+  if (is_debug_mode) {
+    # Register parallel backend
+    boot_estimate_full <-
+      foreach(i = seq_len(n_boot), .combine = rbind) %dopar% {
+        data_main_resampled <- slice_sample(data_main, prop = 1, replace = TRUE)
+        proxy_model(data_main_resampled)
+      }
+
+    # clean up the parallel setup
+    stopCluster(cl)
+    foreach::registerDoSEQ()
+  } else {
+    boot_estimate_full <- matrix(NA, nrow = n_boot, ncol = n_estimates_full)
+    for (i in seq_len(n_boot)) {
+      data_main_resampled <- slice_sample(data_main, prop = 1, replace = TRUE)
+      boot_estimate_full[i, ] <- proxy_model(data_main_resampled)
+    }
   }
 
   # VCOV(tau_proxy_ell - tau_proxy_full)

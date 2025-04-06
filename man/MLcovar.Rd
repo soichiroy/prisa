@@ -10,7 +10,8 @@ MLcovar(
   data,
   labeled_set_var_name,
   n_boot = 500,
-  use_full = TRUE
+  use_full = TRUE,
+  is_debug_mode = TRUE
 )
 }
 \arguments{
