@@ -30,12 +30,10 @@ MLcovar <- function(
   proxy_model,
   data,
   labeled_set_var_name,
-  n_boot = 500,
-  use_full = TRUE,
-  is_parallel = TRUE,
-  seed_value = 1234
+  options = .SetOptions()
 ) {
 
+  seed_value <- options$seed_value
   if (is.null(seed_value)) stop("seed_value must be provided.")
   set.seed(seed_value)
 
@@ -50,12 +48,8 @@ MLcovar <- function(
     main_model,
     proxy_model,
     data_list,
-    n_boot,
-    point_estimate$n_estimates_labeled,
-    point_estimate$n_estimates_full,
-    use_full,
-    is_parallel = is_parallel,
-    seed_value = seed_value
+    point_estimate,
+    options
   )
 
   # Estimate optimal coefficients
@@ -64,7 +58,7 @@ MLcovar <- function(
   )
 
   # Combine estimates
-  main_estimate <- .CombineEstimates( point_estimate$estimates, coef_estimates)
+  main_estimate <- .CombineEstimates(point_estimate$estimates, coef_estimates)
 
   # Estimate the variance
   var_estimates <- .EstimateVariance(
@@ -84,6 +78,24 @@ MLcovar <- function(
 
   class(output) <- c(class(output), "MLcovar")
   output
+}
+
+
+#' @title Set options for the main function
+#' 
+#' @return A list of options
+#' @noRd 
+.SetOptions <- function(
+    n_boot = 500,
+    use_full = TRUE,
+    is_parallel = TRUE,
+    seed_value = 1234) {
+  list(
+    n_boot = n_boot,
+    use_full = use_full,
+    is_parallel = is_parallel,
+    seed_value = seed_value
+  )
 }
 
 .GetPointEstimates <- function(main_model, proxy_model, data_list) {
@@ -164,13 +176,17 @@ MLcovar <- function(
     main_model,
     proxy_model,
     data_list,
-    n_boot,
-    n_estimates_labeled, 
-    n_estimates_full,
-    use_full,
-    is_parallel,
-    seed_value) {
+    point_estimate,
+    options) {
+  
+  # Extract option values
+  n_boot <- options$n_boot
+  use_full <- options$use_full
+  is_parallel <- options$is_parallel
+  seed_value <- options$seed_value
 
+  n_estimates_labeled <- point_estimate$n_estimates_labeled
+  n_estimates_full <- point_estimate$n_estimates_full
 
   # Register parallel backend
   if (is_parallel) {

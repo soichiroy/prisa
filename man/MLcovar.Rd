@@ -9,10 +9,7 @@ MLcovar(
   proxy_model,
   data,
   labeled_set_var_name,
-  n_boot = 500,
-  use_full = TRUE,
-  is_parallel = TRUE,
-  seed_value = 1234
+  options = .SetOptions()
 )
 }
 \arguments{
@@ -92,8 +89,7 @@ fit_1 <- MLcovar(
   proxy_model = fn_proxy_1,
   data = df_test,
   labeled_set_var_name = "is_labeled",
-  n_boot = 5000,
-  use_full = TRUE
+  options = .SetOptions(n_boot = 500, use_full = FALSE)
 )
 summary(fit_1)
 
@@ -102,8 +98,7 @@ fit_1_use_ell <- MLcovar(
   proxy_model = fn_proxy_1,
   data = df_test,
   labeled_set_var_name = "is_labeled",
-  n_boot = 5000,
-  use_full = FALSE
+  options = .SetOptions(n_boot = 500, use_full = TRUE)
 )
 summary(fit_1_use_ell)
 
@@ -120,8 +115,7 @@ fit_12 <- MLcovar(
   proxy_model = fn_proxy_1_and_2,
   data = df_test,
   labeled_set_var_name = "is_labeled",
-  n_boot = 5000,
-  use_full = FALSE
+  options = .SetOptions(n_boot = 500, use_full = FALSE)
 )
 
 # Results with two proxies
