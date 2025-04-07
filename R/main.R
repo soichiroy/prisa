@@ -69,7 +69,8 @@ MLcovar <- function(
     coef_estimates,
     cov_estimates,
     var_estimates,
-    data_list
+    data_list,
+    options
   )
 
   class(output) <- c(class(output), "MLcovar")
@@ -338,7 +339,8 @@ SetOptions <- function(
     coef_estimates,
     cov_estimates,
     var_estimates,
-    data_list) {
+    data_list,
+    options) {
 
   # Standard error of the main estimate
   std_error <- sqrt(var_estimates$var)
@@ -363,6 +365,7 @@ SetOptions <- function(
   list(
     estimates = main_df,
     additional_info = output_quantities,
-    data_list = data_list
+    data_list = data_list[c("n_ell", "n_full", "prop")],
+    options = options
   )
 }
