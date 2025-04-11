@@ -212,20 +212,19 @@ SetOptions <- function(
 
   # Bootstrap for the labeled data to estimate the variance-covariance matrix
   # of the main estimators based on the labeled data.
-  boot_estimate_labeled <-
-    foreach(
-      i = seq_len(n_boot),
-      .combine = rbind,
-      .packages = c("dplyr"),
-      .inorder = FALSE,
-      .export = c(".GetPointEstimatesLabeled")
-    ) %dopar% {
-        data_labeled_resampled <- 
-          slice_sample(data_list$dat_labeled, prop = 1, replace = TRUE)
-        .GetPointEstimatesLabeled(
-          main_model, proxy_model, data_labeled_resampled
-        )
-    }
+  boot_estimate_labeled <- foreach(
+    i = seq_len(n_boot),
+    .combine = rbind,
+    .packages = c("dplyr"),
+    .inorder = FALSE,
+    .export = c(".GetPointEstimatesLabeled")
+  ) %dopar% {
+      data_labeled_resampled <- 
+        slice_sample(data_list$dat_labeled, prop = 1, replace = TRUE)
+      .GetPointEstimatesLabeled(
+        main_model, proxy_model, data_labeled_resampled
+      )
+  }
   vcov_labeled <- cov(boot_estimate_labeled)
 
   # Exit the function if boot_full is FALSE (skip the bootstrap for the entire
