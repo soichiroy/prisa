@@ -30,8 +30,6 @@ MLcovar <- function(
 ) {
 
   seed_value <- options$seed_value
-  if (is.null(seed_value)) stop("seed_value must be provided.")
-  set.seed(seed_value)
 
   # Split data into labeled and unlabeled sets
   data_list <- .SplitData(data, labeled_set_var_name)
@@ -99,7 +97,7 @@ SetOptions <- function(
     n_boot = 500,
     use_full = TRUE,
     is_parallel = TRUE,
-    seed_value = 1234) {
+    seed_value = as.integer(Sys.time())) {
   list(
     n_boot = n_boot,
     use_full = use_full,
