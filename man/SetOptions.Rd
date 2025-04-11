@@ -23,6 +23,10 @@ will be used in the proxy model.}
 \item{use_parallel}{A logical value that indicates whether the bootstrap
 should be run in parallel. Default is TRUE.}
 
+\item{n_cores}{The number of cores to be used for bootstrap interactions.
+Default is the number of cores available minus one. This value will be
+ignored if use_parallel is FALSE.}
+
 \item{seed_value}{The seed value for the random number generator. Default is
 drawn from a uniform between 1 and 1e7.}
 }

@@ -86,6 +86,9 @@ MLcovar <- function(
 #'  will be used in the proxy model.
 #' @param use_parallel A logical value that indicates whether the bootstrap
 #'  should be run in parallel. Default is TRUE. 
+#' @param n_cores The number of cores to be used for bootstrap interactions.
+#'  Default is the number of cores available minus one. This value will be
+#'  ignored if use_parallel is FALSE.
 #' @param seed_value The seed value for the random number generator. Default is
 #'  drawn from a uniform between 1 and 1e7. 
 #' 
@@ -110,7 +113,7 @@ SetOptions <- function(
   if (!is.logical(use_parallel)) {
     stop("use_parallel must be a logical value.")
   }
-  if (n_cores >= parallel::detectCores()) {
+  if (n_cores > parallel::detectCores()) {
     stop("n_cores must be less than the total number of cores available.")
   }
   
