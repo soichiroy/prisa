@@ -59,7 +59,6 @@ MLcovar <- function(
     cov_estimates, coef_estimates, data_list$prop, data_list$n_ell
   )
 
-
   # Prepare output
   output <- .FormatOutput(
     main_estimate,
@@ -353,8 +352,11 @@ SetOptions <- function(
     data_list,
     options) {
 
-  # Standard error of the main estimate
+  # Standard error of the proposed estimator
   std_error <- sqrt(var_estimates$var)
+
+  # Standard error of the labeled-only estimator
+  se_labeled_only <- sqrt(cov_estimates$vcov_labeled[1, 1])
 
   # Main information
   main_df <- data.frame(
@@ -362,7 +364,9 @@ SetOptions <- function(
     std_err = std_error,
     ci_lower_95 = main_estimate - qnorm(1 - 0.05 / 2) * std_error,
     ci_upper_95 = main_estimate + qnorm(1 - 0.05 / 2) * std_error,
-    elss = var_estimates$elss
+    elss = var_estimates$elss,
+    labeled_only = point_estimate[1],
+    se_labeled_only = se_labeled_only
   )
 
   # Other information necessary for the follow-up analysis
