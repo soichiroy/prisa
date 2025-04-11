@@ -216,7 +216,12 @@ SetOptions <- function(
   # of the main estimators based on the labeled data.
   boot_estimate_labeled <-
     foreach(
-      i = seq_len(n_boot), .combine = rbind, .packages = c("dplyr")) %dopar% {
+      i = seq_len(n_boot),
+      .combine = rbind,
+      .packages = c("dplyr"),
+      .export = c(
+        ".GetPointEstimatesLabeled", "main_model", "proxy_model", "data_list")
+    ) %dopar% {
         data_labeled_resampled <- 
           slice_sample(data_list$dat_labeled, prop = 1, replace = TRUE)
         .GetPointEstimatesLabeled(
@@ -243,7 +248,11 @@ SetOptions <- function(
   
   # Bootstrap for the full (or unlabeled) data
   boot_estimate_full <- foreach(
-    i = seq_len(n_boot), .combine = rbind, .packages = c("dplyr")) %dopar% {
+    i = seq_len(n_boot),
+    .combine = rbind,
+    .packages = c("dplyr"),
+    .export = c( "proxy_model", "data_main")
+  ) %dopar% {
       data_main_resampled <- slice_sample(data_main, prop = 1, replace = TRUE)
       proxy_model(data_main_resampled)
   }
