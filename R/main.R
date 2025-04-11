@@ -179,6 +179,7 @@ SetOptions <- function(
 #' @importFrom doParallel registerDoParallel
 #' @importFrom foreach foreach %do% %dopar%
 #' @importFrom doRNG registerDoRNG
+#' @import dplyr
 #' @noRd 
 .RunBootstrap <- function(
     main_model,
