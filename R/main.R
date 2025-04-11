@@ -144,9 +144,9 @@ SetOptions <- function(
   n_estimates_labeled <- length(estimates)
   n_estimates_full <- length(delta_diff)
   list(
-  	estimates = estimates, 
-  	n_estimates_labeled = n_estimates_labeled, 
-  	n_estimates_full = n_estimates_full
+    estimates = estimates, 
+    n_estimates_labeled = n_estimates_labeled, 
+    n_estimates_full = n_estimates_full
   )
 }
 
@@ -295,7 +295,7 @@ SetOptions <- function(
 #' @param cov_estimates A list of bootstrap variance-covariance estimates.
 #' @noRd
 .EstimateOptimalCoefficients <- function(cov_estimates, prop, n_ell) {
-	vcov_labeled <- cov_estimates$vcov_labeled
+  vcov_labeled <- cov_estimates$vcov_labeled
   # Covariance between the main and proxy model estimates
   #  * [1,1] element is the variance of the main unbiased estimator 
   cov_main_proxy <- as.vector(vcov_labeled[1, -1])
@@ -352,7 +352,7 @@ SetOptions <- function(
   var_theoretical_limit <- prop * var_tau_ell
   if (var_est < var_theoretical_limit) {
     warning("Estimated variance is too small. Using the theoretical limit.")
-  	var_est <- var_theoretical_limit
+    var_est <- var_theoretical_limit
   }
 
   # Compute the variance reduction factor in terms of ELSS
