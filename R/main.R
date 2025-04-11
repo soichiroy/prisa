@@ -173,10 +173,8 @@ SetOptions <- function(
   }
 
   # Split data into labeled and unlabeled sets
-  dat_labeled <- data %>%
-    filter(!!sym(labeled_set_var_name) == 1)
-  unlabeled_set <- data %>%
-    filter(!!sym(labeled_set_var_name) == 0)
+  dat_labeled <- filter(data, !!sym(labeled_set_var_name) == 1)
+  unlabeled_set <- filter(data, !!sym(labeled_set_var_name) == 0)
 
   n_ell <- nrow(dat_labeled)
   n_full <- nrow(data)
