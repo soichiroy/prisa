@@ -39,7 +39,7 @@ Proposed estimator
 \examples{
 ## Function
 logistic <- function (x) {
-	exp(x) / (1 + exp(x))
+  exp(x) / (1 + exp(x))
 }
 
 ## Generate data
@@ -109,10 +109,10 @@ df <- data.frame(
   is_labeled = c(rep(1, n_ell), rep(0, n_u))
 ) |> 
   dplyr::mutate(Y = dplyr::if_else(is_labeled == 1, Y, NA_real_),
-  							D = dplyr::if_else(is_labeled == 1, D, NA_real_),
-  							X1 = dplyr::if_else(is_labeled == 1, X1, NA_real_),
-  							X2 = dplyr::if_else(is_labeled == 1, X2, NA_real_),
-  							Z = dplyr::if_else(is_labeled == 1, Z, NA_real_))
+                D = dplyr::if_else(is_labeled == 1, D, NA_real_),
+                X1 = dplyr::if_else(is_labeled == 1, X1, NA_real_),
+                X2 = dplyr::if_else(is_labeled == 1, X2, NA_real_),
+                Z = dplyr::if_else(is_labeled == 1, Z, NA_real_))
 
 ## Estimation
 ## 0. Estimating the outcome mean
@@ -261,7 +261,7 @@ fn_true_ipw <- function (df) {
   fit_D <- glm(D ~ X1 + X2, family = binomial(link = "logit"), data = df)
   ps <- fit_D$fitted.values
   te <- sum(df$D * df$Y / ps) / sum(df$D / ps) - 
-  				sum((1 - df$D) * df$Y / (1 - ps)) / sum((1 - df$D) / (1 - ps))
+          sum((1 - df$D) * df$Y / (1 - ps)) / sum((1 - df$D) / (1 - ps))
   te
 }
 
@@ -269,7 +269,7 @@ fn_proxy_ipw <- function (df) {
   fit_D <- glm(D_proxy ~ X1_proxy + X2_proxy, family = binomial(link = "logit"), data = df)
   ps <- fit_D$fitted.values
   te <- sum(df$D_proxy * df$Y_proxy_1 / ps) / sum(df$D_proxy / ps) - 
-  				sum((1 - df$D_proxy) * df$Y_proxy_1 / (1 - ps)) / sum((1 - df$D_proxy) / (1 - ps))
+          sum((1 - df$D_proxy) * df$Y_proxy_1 / (1 - ps)) / sum((1 - df$D_proxy) / (1 - ps))
   te
 }
 
@@ -297,8 +297,8 @@ fn_true_aipw <- function (df) {
   fit_D <- glm(D ~ X1 + X2, family = binomial(link = "logit"), data = df)
   ps <- fit_D$fitted.values
   te <- mean(pred_Y1) - mean(pred_Y0) + 
-  				sum(df$D * (df$Y - pred_Y1) / ps) / sum(df$D / ps) - 
-  				sum((1 - df$D) * (df$Y - pred_Y0) / (1 - ps)) / sum((1 - df$D) / (1 - ps))
+          sum(df$D * (df$Y - pred_Y1) / ps) / sum(df$D / ps) - 
+          sum((1 - df$D) * (df$Y - pred_Y0) / (1 - ps)) / sum((1 - df$D) / (1 - ps))
   te
 }
 
@@ -310,8 +310,8 @@ fn_proxy_aipw <- function (df) {
   fit_D <- glm(D_proxy ~ X1_proxy + X2_proxy, family = binomial(link = "logit"), data = df)
   ps <- fit_D$fitted.values
   te <- mean(pred_Y1) - mean(pred_Y0) + 
-  				sum(df$D_proxy * (df$Y_proxy_1 - pred_Y1) / ps) / sum(df$D_proxy / ps) - 
-  				sum((1 - df$D_proxy) * (df$Y_proxy_1 - pred_Y0) / (1 - ps)) / sum((1 - df$D_proxy) / (1 - ps))
+          sum(df$D_proxy * (df$Y_proxy_1 - pred_Y1) / ps) / sum(df$D_proxy / ps) - 
+          sum((1 - df$D_proxy) * (df$Y_proxy_1 - pred_Y0) / (1 - ps)) / sum((1 - df$D_proxy) / (1 - ps))
   te
 }
 
@@ -395,9 +395,9 @@ status_proxy <- rbinom(n = n_all, size = 1, prob = 0.03 + status * 0.94)
 
 # Create a data frame
 df_survival <- data.frame(
-	time = time,
-	status = status,
-	status_proxy = status_proxy,
+  time = time,
+  status = status,
+  status_proxy = status_proxy,
   D = D,
   D_proxy = D_proxy,
   X1 = X1,
@@ -407,9 +407,9 @@ df_survival <- data.frame(
   is_labeled = c(rep(1, n_ell), rep(0, n_u))
 ) |> 
   dplyr::mutate(status = dplyr::if_else(is_labeled == 1, status, NA_real_),
-  							D = dplyr::if_else(is_labeled == 1, D, NA_real_),
-  							X1 = dplyr::if_else(is_labeled == 1, X1, NA_real_),
-  							X2 = dplyr::if_else(is_labeled == 1, X2, NA_real_))
+                D = dplyr::if_else(is_labeled == 1, D, NA_real_),
+                X1 = dplyr::if_else(is_labeled == 1, X1, NA_real_),
+                X2 = dplyr::if_else(is_labeled == 1, X2, NA_real_))
 
 ## Estimation
 ## Prepare an estimation model with true labels

@@ -22,18 +22,18 @@ accuracy <- function(
   hvalue <- .hvalue(zeta, n_ell, n, elss, prop, R_sq)
 
   elluhvalues <- data.frame(
-  	zeta = zeta,
-  	elss = elss_new,
-  	ellvalue = ellvalue,
-  	uvalue = uvalue,
-  	hvalue = hvalue
+    zeta = zeta,
+    elss = elss_new,
+    ellvalue = ellvalue,
+    uvalue = uvalue,
+    hvalue = hvalue
   )
   output <- list(
-  	result = elluhvalues,
-  	n = n,
-  	n_ell = n_ell,
-  	elss = elss,
-  	r_sq = R_sq
+    result = elluhvalues,
+    n = n,
+    n_ell = n_ell,
+    elss = elss,
+    r_sq = R_sq
   )
 
   class(output) <- c(class(output), "accuracy")
