@@ -91,16 +91,35 @@ MLcovar <- function(
 #' 
 #' @return A named list of options.
 #' @seealso [MLcovar()]
+#' @importFrom parallel detectCores
 #' @export 
 SetOptions <- function(
     n_boot = 500,
     use_full = TRUE,
     use_parallel = TRUE,
+    n_cores = parallel::detectCores() - 1,
     seed_value = floor(runif(1, 1, 1e7))) {
+
+  # Check inputs
+  if (!is.numeric(n_boot) || n_boot <= 0) {
+    stop("n_boot must be a positive number.")
+  }
+  if (!is.logical(use_full)) {
+    stop("use_full must be a logical value.")
+  }
+  if (!is.logical(use_parallel)) {
+    stop("use_parallel must be a logical value.")
+  }
+  if (n_cores >= parallel::detectCores()) {
+    stop("n_cores must be less than the total number of cores available.")
+  }
+  
+  # Return the list of options
   list(
     n_boot = n_boot,
     use_full = use_full,
     use_parallel = use_parallel,
+    n_cores = n_cores,
     seed_value = seed_value
   )
 }
@@ -192,13 +211,14 @@ SetOptions <- function(
   use_full <- options$use_full
   use_parallel <- options$use_parallel
   seed_value <- options$seed_value
+  n_cores <- options$n_cores
 
   n_estimates_labeled <- point_estimate$n_estimates_labeled
   n_estimates_full <- point_estimate$n_estimates_full
 
   # Register parallel backend
   if (use_parallel) {
-    cl <- parallel::makeCluster(parallel::detectCores() - 1)
+    cl <- parallel::makeCluster(n_cores)
     doParallel::registerDoParallel(cl)
     doRNG::registerDoRNG(seed_value)
     on.exit({

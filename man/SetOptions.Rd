@@ -7,8 +7,9 @@
 SetOptions(
   n_boot = 500,
   use_full = TRUE,
-  is_parallel = TRUE,
-  seed_value = 1234
+  use_parallel = TRUE,
+  n_cores = parallel::detectCores() - 1,
+  seed_value = floor(runif(1, 1, 1e+07))
 )
 }
 \arguments{
@@ -19,11 +20,11 @@ is 500. When use_full is TRUE, the full data is also used for the bootstrap.}
 be used in the proxy model. Default is TRUE. If FALSE, the unlabeled data
 will be used in the proxy model.}
 
-\item{is_parallel}{A logical value that indicates whether the bootstrap
+\item{use_parallel}{A logical value that indicates whether the bootstrap
 should be run in parallel. Default is TRUE.}
 
 \item{seed_value}{The seed value for the random number generator. Default is
-1234.}
+drawn from a uniform between 1 and 1e7.}
 }
 \value{
 A named list of options.
