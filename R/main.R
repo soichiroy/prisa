@@ -217,6 +217,7 @@ SetOptions <- function(
       i = seq_len(n_boot),
       .combine = rbind,
       .packages = c("dplyr"),
+      .inorder = FALSE,
       .export = c(".GetPointEstimatesLabeled")
     ) %dopar% {
         data_labeled_resampled <- 
@@ -247,6 +248,7 @@ SetOptions <- function(
   boot_estimate_full <- foreach(
     i = seq_len(n_boot),
     .combine = rbind,
+    .inorder = FALSE,
     .packages = c("dplyr")
   ) %dopar% {
       data_main_resampled <- slice_sample(data_main, prop = 1, replace = TRUE)
