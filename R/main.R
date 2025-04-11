@@ -85,7 +85,7 @@ MLcovar <- function(
 #' @param use_full A logical value that indicates whether the full data should
 #'  be used in the proxy model. Default is TRUE. If FALSE, the unlabeled data
 #'  will be used in the proxy model.
-#' @param is_parallel A logical value that indicates whether the bootstrap
+#' @param use_parallel A logical value that indicates whether the bootstrap
 #'  should be run in parallel. Default is TRUE. 
 #' @param seed_value The seed value for the random number generator. Default is
 #'  drawn from a uniform between 1 and 1e7. 
@@ -96,12 +96,12 @@ MLcovar <- function(
 SetOptions <- function(
     n_boot = 500,
     use_full = TRUE,
-    is_parallel = TRUE,
+    use_parallel = TRUE,
     seed_value = floor(runif(1, 1, 1e7))) {
   list(
     n_boot = n_boot,
     use_full = use_full,
-    is_parallel = is_parallel,
+    use_parallel = use_parallel,
     seed_value = seed_value
   )
 }
@@ -191,14 +191,14 @@ SetOptions <- function(
   # Extract option values
   n_boot <- options$n_boot
   use_full <- options$use_full
-  is_parallel <- options$is_parallel
+  use_parallel <- options$use_parallel
   seed_value <- options$seed_value
 
   n_estimates_labeled <- point_estimate$n_estimates_labeled
   n_estimates_full <- point_estimate$n_estimates_full
 
   # Register parallel backend
-  if (is_parallel) {
+  if (use_parallel) {
     cl <- parallel::makeCluster(parallel::detectCores() - 1)
     doParallel::registerDoParallel(cl)
     doRNG::registerDoRNG(seed_value)
@@ -207,7 +207,7 @@ SetOptions <- function(
       foreach::registerDoSEQ()
     })
   } else {
-    # When is_parallel is FALSE, use sequential processing
+    # When use_parallel is FALSE, use sequential processing
     foreach::registerDoSEQ()
   }
 
