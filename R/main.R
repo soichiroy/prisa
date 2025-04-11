@@ -88,7 +88,7 @@ MLcovar <- function(
 #' @param is_parallel A logical value that indicates whether the bootstrap
 #'  should be run in parallel. Default is TRUE. 
 #' @param seed_value The seed value for the random number generator. Default is
-#'  1234. 
+#'  drawn from a uniform between 1 and 1e7. 
 #' 
 #' @return A named list of options.
 #' @seealso [MLcovar()]
@@ -224,7 +224,7 @@ SetOptions <- function(
         .GetPointEstimatesLabeled(
           main_model, proxy_model, data_labeled_resampled
         )
-  }
+    }
   vcov_labeled <- cov(boot_estimate_labeled)
 
   # Exit the function if boot_full is FALSE (skip the bootstrap for the entire
