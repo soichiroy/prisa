@@ -97,7 +97,7 @@ SetOptions <- function(
     n_boot = 500,
     use_full = TRUE,
     is_parallel = TRUE,
-    seed_value = as.integer(Sys.time())) {
+    seed_value = floor(runif(1, 1, 1e7))) {
   list(
     n_boot = n_boot,
     use_full = use_full,
