@@ -28,7 +28,8 @@ Default is the number of cores available minus one. This value will be
 ignored if use_parallel is FALSE.}
 
 \item{seed_value}{The seed value for the random number generator. Default is
-drawn from a uniform between 1 and 1e7.}
+drawn from a uniform between 1 and 1e7. When use_parallel is FALSE, the seed
+value specified here does not affect the results.}
 }
 \value{
 A named list of options.

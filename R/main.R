@@ -340,13 +340,15 @@ SetOptions <- function(
   # Variance of the original estimator
   var_tau_ell <- vcov_labeled[1, 1]
 
-  if (is.null(cov_estimates$vcov_full)) {
+  # vcov_main_diff is NULL when use_full is FALSE.
+  if (is.null(cov_estimates$vcov_main_diff)) {
     # Variance of the proposed estimator:
     #   Additional (1 - prop) scaling because cov_main_proxy is based on the
     #   labeled data.
     var_est <- var_tau_ell - 
       (1 - prop) * as.vector(cov_main_proxy %*% coef_estimates) 
   } else {
+    # Use the full formula to estimate the variance
     var_est <- var_tau_ell - 
       as.vector(cov_estimates$vcov_main_diff %*% coef_estimates)
   }
