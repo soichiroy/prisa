@@ -219,8 +219,7 @@ SetOptions <- function(
       i = seq_len(n_boot),
       .combine = rbind,
       .packages = c("dplyr"),
-      .export = c(
-        ".GetPointEstimatesLabeled", "main_model", "proxy_model", "data_list")
+      .export = c(".GetPointEstimatesLabeled")
     ) %dopar% {
         data_labeled_resampled <- 
           slice_sample(data_list$dat_labeled, prop = 1, replace = TRUE)
@@ -250,8 +249,7 @@ SetOptions <- function(
   boot_estimate_full <- foreach(
     i = seq_len(n_boot),
     .combine = rbind,
-    .packages = c("dplyr"),
-    .export = c( "proxy_model", "data_main")
+    .packages = c("dplyr")
   ) %dopar% {
       data_main_resampled <- slice_sample(data_main, prop = 1, replace = TRUE)
       proxy_model(data_main_resampled)
