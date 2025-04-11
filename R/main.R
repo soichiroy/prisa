@@ -215,10 +215,13 @@ SetOptions <- function(
   # Bootstrap for the labeled data to estimate the variance-covariance matrix
   # of the main estimators based on the labeled data.
   boot_estimate_labeled <-
-    foreach(i = seq_len(n_boot), .combine = rbind) %dopar% {
-      data_labeled_resampled <- 
-        slice_sample(data_list$dat_labeled, prop = 1, replace = TRUE)
-      .GetPointEstimatesLabeled(main_model, proxy_model, data_labeled_resampled)
+    foreach(
+      i = seq_len(n_boot), .combine = rbind, .packages = c("dplyr")) %dopar% {
+        data_labeled_resampled <- 
+          slice_sample(data_list$dat_labeled, prop = 1, replace = TRUE)
+        .GetPointEstimatesLabeled(
+          main_model, proxy_model, data_labeled_resampled
+        )
   }
   vcov_labeled <- cov(boot_estimate_labeled)
 
@@ -239,9 +242,10 @@ SetOptions <- function(
   data_main <- data_list$dat_full
   
   # Bootstrap for the full (or unlabeled) data
-  boot_estimate_full <- foreach(i = seq_len(n_boot), .combine = rbind) %dopar% {
-    data_main_resampled <- slice_sample(data_main, prop = 1, replace = TRUE)
-    proxy_model(data_main_resampled)
+  boot_estimate_full <- foreach(
+    i = seq_len(n_boot), .combine = rbind, .packages = c("dplyr")) %dopar% {
+      data_main_resampled <- slice_sample(data_main, prop = 1, replace = TRUE)
+      proxy_model(data_main_resampled)
   }
 
   # VCOV(tau_proxy_ell - tau_proxy_full)
