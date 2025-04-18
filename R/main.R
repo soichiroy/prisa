@@ -29,8 +29,6 @@ MLcovar <- function(
   options = SetOptions()
 ) {
 
-  seed_value <- options$seed_value
-
   # Split data into labeled and unlabeled sets
   data_list <- .SplitData(data, labeled_set_var_name)
 
@@ -51,13 +49,13 @@ MLcovar <- function(
     cov_estimates, data_list$prop, data_list$n_ell
   )
 
-  # Combine estimates
-  main_estimate <- .CombineEstimates(point_estimate$estimates, coef_estimates)
-
   # Estimate the variance
   var_estimates <- .EstimateVariance(
-    cov_estimates, coef_estimates, data_list$prop, data_list$n_ell
+    cov_estimates, coef_estimates, data_list$prop, data_list$n_ell, options
   )
+
+  # Combine estimates
+  main_estimate <- .CombineEstimates(point_estimate$estimates, coef_estimates)
 
   # Prepare output
   output <- .FormatOutput(
@@ -102,7 +100,8 @@ SetOptions <- function(
     use_full = TRUE,
     use_parallel = TRUE,
     n_cores = parallel::detectCores() - 1,
-    seed_value = floor(runif(1, 1, 1e7))) {
+    seed_value = floor(runif(1, 1, 1e7)),
+    debug_mode = TRUE) {
 
   # Check inputs
   if (!is.numeric(n_boot) || n_boot <= 0) {
@@ -124,7 +123,8 @@ SetOptions <- function(
     use_full = use_full,
     use_parallel = use_parallel,
     n_cores = n_cores,
-    seed_value = seed_value
+    seed_value = seed_value,
+    debug_mode = debug_mode
   )
 }
 
@@ -332,7 +332,9 @@ SetOptions <- function(
 #' Estimate the variance of the proposed estimator
 #' 
 #' @noRd
-.EstimateVariance <- function(cov_estimates, coef_estimates, prop, n_ell) {
+.EstimateVariance <- function(
+  cov_estimates, coef_estimates, prop, n_ell, options
+) {
   # Variance covariance of the main and proxy estimators
   vcov_labeled <- cov_estimates$vcov_labeled
   cov_main_proxy <- as.vector(vcov_labeled[1, -1])
@@ -353,11 +355,23 @@ SetOptions <- function(
       as.vector(cov_estimates$vcov_main_diff %*% coef_estimates)
   }
 
+  # Check the variance estimate
   var_theoretical_limit <- prop * var_tau_ell
-  if (var_est < var_theoretical_limit) {
-    warning("Estimated variance is too small. Using the theoretical limit.")
+  if (var_est < var_theoretical_limit && !options$debug_mode) {
+    stop(
+      "Failed variance estimation. Please use use_full = TRUE option instead."
+    )
+  }
+   
+  if (var_est < var_theoretical_limit && options$debug_mode) {
+    warning(
+      "Estimated variance is too small.", 
+      "Using the theoretical limit instead.", 
+      "Only for debugging."
+    )
     var_est <- var_theoretical_limit
   }
+  
 
   # Compute the variance reduction factor in terms of ELSS
   elss <- n_ell * var_tau_ell / var_est

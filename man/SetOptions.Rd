@@ -9,7 +9,8 @@ SetOptions(
   use_full = TRUE,
   use_parallel = TRUE,
   n_cores = parallel::detectCores() - 1,
-  seed_value = floor(runif(1, 1, 1e+07))
+  seed_value = floor(runif(1, 1, 1e+07)),
+  debug_mode = TRUE
 )
 }
 \arguments{
