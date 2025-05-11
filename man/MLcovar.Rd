@@ -9,18 +9,23 @@ MLcovar(
   proxy_model,
   data,
   labeled_set_var_name,
-  options = SetOptions()
+  options = SetOptions(),
+  args_main_model = list(),
+  args_proxy_model = list()
 )
 }
 \arguments{
 \item{main_model}{A function that estimates the target parameter with the
-labeled data. The function takes the data as the only argument and returns
-the estimate of the target parameter. The target parameter must be a scalar.}
+labeled data. The function takes the data as the first argument and returns
+the estimate of the target parameter. The target parameter must be a scalar.
+The additional arguments to the main_model function must be provided in the
+args_main_model argument.}
 
 \item{proxy_model}{A function that estimates the target parameter with the
-proxy variables. The function takes the data as the only argument and
+proxy variables. The function takes the data as the first argument and
 returns the estimate of the target parameter. The target parameter must be a
-scalar or a vector.}
+scalar or a vector. The additional arguments to the proxy_model function must be
+provided in the args_proxy_model argument.}
 
 \item{data}{A data frame that contains the labeled and unlabeled data. The
 rows that contains the labeled data must be indicated by a variable in the
@@ -32,6 +37,12 @@ rows are labeled or not. The variable must be binary.}
 
 \item{options}{A list of options for the analysis. The values must be set by
 the \code{\link[=SetOptions]{SetOptions()}}.}
+
+\item{args_main_model}{A list of additional arguments to be passed to the
+main_model function. The list must be named.}
+
+\item{args_proxy_model}{A list of additional arguments to be passed to the
+proxy_model function. The list must be named.}
 }
 \description{
 Proposed estimator
@@ -164,41 +175,60 @@ fn_proxy_lm_12 <- function (df) {
   c(fit1$coefficients, fit2$coefficients)
 }
 
+fn_proxy_lm <- function(df, method = c("proxy1, proxy2", "proxy_1_2")) {
+  method <- match.arg(method)
+  if (method == "proxy1") {
+    fit <- lm(Y_proxy_1 ~ D_proxy + X1_proxy + X2_proxy, data = df)
+    return(fit$coef)
+  } else if (method == "proxy2") {
+    fit <- lm(Y_proxy_2 ~ D_proxy + X1_proxy + X2_proxy, data = df)
+    return(fit$coef)
+  }
+
+  fit1 <- lm(Y_proxy_1 ~ D_proxy + X1_proxy + X2_proxy, data = df)
+  fit2 <- lm(Y_proxy_2 ~ D_proxy + X1_proxy + X2_proxy, data = df)
+  c(fit1$coefficients, fit2$coefficients)
+}
+
 ## Estimate with the proposed estimator
 ## With a model for Y_proxy_1
 fit_lm_1 <- MLcovar(
   main_model = fn_true_lm,
-  proxy_model = fn_proxy_lm_1,
+  proxy_model = fn_proxy_lm,
   data = df,
   labeled_set_var_name = "is_labeled",
-  options = SetOptions(n_boot = 5000, use_full = TRUE)
+  options = SetOptions(n_boot = 5000, use_full = TRUE),
+  args_proxy_model = list(method = "proxy1")
 )
 
 ## With a model for Y_proxy_2
 fit_lm_2 <- MLcovar(
   main_model = fn_true_lm,
-  proxy_model = fn_proxy_lm_2,
+  proxy_model = fn_proxy_lm,
   data = df,
   labeled_set_var_name = "is_labeled",
-  options = SetOptions(n_boot = 5000, use_full = TRUE)
+  options = SetOptions(n_boot = 5000, use_full = TRUE),
+  args_proxy_model = list(method = "proxy2")
 )
 
 ## With a model for Y_proxy_1 and Y_proxy_2
 fit_lm_12 <- MLcovar(
   main_model = fn_true_lm,
-  proxy_model = fn_proxy_lm_12,
+  proxy_model = fn_proxy_lm,
   data = df,
   labeled_set_var_name = "is_labeled",
-  options = SetOptions(n_boot = 5000, use_full = TRUE)
+  options = SetOptions(n_boot = 5000, use_full = TRUE),
+  args_proxy_model = list(method = "proxy_1_2")
 )
 
 ## use_full = FALSE
 fit_lm_1_ell <- MLcovar(
   main_model = fn_true_lm,
-  proxy_model = fn_proxy_lm_1,
+  proxy_model = fn_proxy_lm,
   data = df,
   labeled_set_var_name = "is_labeled",
-  options = SetOptions(n_boot = 5000, use_full = FALSE)
+  options = SetOptions(n_boot = 5000, use_full = FALSE),
+  args_proxy_model = list(method = "proxy1")
 )
 
 ## Estimation results
