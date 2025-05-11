@@ -4,12 +4,15 @@
 #' @title Proposed estimator
 #' 
 #' @param main_model A function that estimates the target parameter with the 
-#'  labeled data. The function takes the data as the only argument and returns
+#'  labeled data. The function takes the data as the first argument and returns
 #'  the estimate of the target parameter. The target parameter must be a scalar.
+#'  The additional arguments to the main_model function must be provided in the
+#'  args_main_model argument. 
 #' @param proxy_model A function that estimates the target parameter with the
-#'  proxy variables. The function takes the data as the only argument and
+#'  proxy variables. The function takes the data as the first argument and
 #'  returns the estimate of the target parameter. The target parameter must be a
-#'  scalar or a vector.
+#'  scalar or a vector. The additional arguments to the proxy_model function must be
+#'  provided in the args_proxy_model argument. 
 #' @param data A data frame that contains the labeled and unlabeled data. The 
 #'  rows that contains the labeled data must be indicated by a variable in the
 #'  data frame. The variable name must be provided in the labeled_set_var_name
@@ -18,6 +21,10 @@
 #'  rows are labeled or not. The variable must be binary.
 #' @param options A list of options for the analysis. The values must be set by
 #'  the [SetOptions()].
+#' @param args_main_model A list of additional arguments to be passed to the
+#'  main_model function. The list must be named.
+#' @param args_proxy_model A list of additional arguments to be passed to the
+#'  proxy_model function. The list must be named.
 #' @seealso [SetOptions()]
 #' @example examples/example-MLcovar.R
 #' @export
@@ -26,14 +33,22 @@ MLcovar <- function(
   proxy_model,
   data,
   labeled_set_var_name,
-  options = SetOptions()
+  options = SetOptions(),
+  args_main_model = list(),
+  args_proxy_model = list()
 ) {
 
   # Split data into labeled and unlabeled sets
   data_list <- .SplitData(data, labeled_set_var_name)
 
   # Get combined estimate
-  point_estimate <- .GetPointEstimates(main_model, proxy_model, data_list)
+  point_estimate <- .GetPointEstimates(
+    main_model,
+    proxy_model,
+    data_list,
+    args_main_model,
+    args_proxy_model
+  )
 
   # Naive bootstrap implementation
   cov_estimates <- .RunBootstrap(
@@ -41,7 +56,9 @@ MLcovar <- function(
     proxy_model,
     data_list,
     point_estimate,
-    options
+    options,
+    args_main_model,
+    args_proxy_model
   )
 
   # Estimate optimal coefficients
@@ -128,17 +145,28 @@ SetOptions <- function(
   )
 }
 
-.GetPointEstimates <- function(main_model, proxy_model, data_list) {
+.GetPointEstimates <- function(
+    main_model,
+    proxy_model,
+    data_list,
+    args_main_model,
+    args_proxy_model) {
+
   # Unbiased estimator
-  tau_ell <- main_model(data_list$dat_labeled)
+  tau_ell <-
+    do.call(main_model, c(list(data_list$dat_labeled), args_main_model))
 
   if (length(as.vector(tau_ell)) > 1) {
     stop("The main_model function must return a scalar value.")
   }
 
   # Biased estimators
-  delta_ell <- proxy_model(data_list$dat_labeled)
-  delta_full <- proxy_model(data_list$dat_full)
+  delta_ell <- do.call(
+    proxy_model, c(list(data_list$dat_labeled), args_proxy_model)
+  )
+  delta_full <- do.call(
+    proxy_model, c(list(data_list$dat_full), args_proxy_model)
+  )
 
   # Create control variate estimators
   delta_diff <- as.vector(delta_ell) - as.vector(delta_full)
@@ -155,14 +183,22 @@ SetOptions <- function(
 }
 
 .GetPointEstimatesLabeled <- function(
-    main_model, proxy_model, data_labeled_resampled
+    main_model,
+    proxy_model,
+    data_labeled_resampled,
+    args_main_model,
+    args_proxy_model
 ) {
 
   # Unbiased estimator
-  tau_ell <- main_model(data_labeled_resampled)
+  tau_ell <- do.call(
+    main_model, c(list(data_labeled_resampled), args_main_model)
+  )
 
   # Biased estimators
-  delta_ell <- proxy_model(data_labeled_resampled)
+  delta_ell <- do.call(
+    proxy_model, c(list(data_labeled_resampled), args_proxy_model)
+  )
 
   # Return estimates
   estimates <- c(tau_ell, delta_ell) 
@@ -206,7 +242,9 @@ SetOptions <- function(
     proxy_model,
     data_list,
     point_estimate,
-    options) {
+    options,
+    args_main_model,
+    args_proxy_model) {
   
   # Extract option values
   n_boot <- options$n_boot
@@ -244,7 +282,11 @@ SetOptions <- function(
       data_labeled_resampled <- 
         slice_sample(data_list$dat_labeled, prop = 1, replace = TRUE)
       .GetPointEstimatesLabeled(
-        main_model, proxy_model, data_labeled_resampled
+        main_model,
+        proxy_model,
+        data_labeled_resampled,
+        args_main_model,
+        args_proxy_model
       )
   }
   vcov_labeled <- cov(boot_estimate_labeled)
@@ -273,7 +315,7 @@ SetOptions <- function(
     .packages = c("dplyr")
   ) %dopar% {
       data_main_resampled <- slice_sample(data_main, prop = 1, replace = TRUE)
-      proxy_model(data_main_resampled)
+      do.call(proxy_model, c(list(data_main_resampled), args_proxy_model))
   }
 
   # VCOV(tau_proxy_ell - tau_proxy_full)
