@@ -37,3 +37,16 @@ test_that("Return correct output from .GetPointEstimatesLabeled", {
   ), c(mean(1:5), mean(1:5) / 2))
 })
 
+test_that("Check valid form of functions", {
+  main_model_invalid <- function(df) {
+    return(c(mean(df$x), mean(df$y)))
+  }
+  expect_error(.GetPointEstimates(
+    main_model = main_model_invalid, 
+    proxy_model = proxy_model,
+    data_list = df_list,
+    args_main_model = list(),
+    args_proxy_model = list()
+  ), "The main_model function must return a scalar value.")
+  
+})
