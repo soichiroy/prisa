@@ -197,7 +197,7 @@ SetOptions <- function(
     ci_upper_95 = main_estimate + qnorm(1 - 0.05 / 2) * std_error,
     elss = var_estimates$elss,
     labeled_only = point_estimate[1],
-    se_labeled_only = se_labeled_only
+    labeled_only_std_err = se_labeled_only
   )
 
   # Other information necessary for the follow-up analysis
