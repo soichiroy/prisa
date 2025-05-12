@@ -62,9 +62,7 @@ MLcovar <- function(
   )
 
   # Estimate optimal coefficients
-  coef_estimates <- .EstimateOptimalCoefficients(
-    cov_estimates, data_list$prop, data_list$n_ell
-  )
+  coef_estimates <- .EstimateOptimalCoefficients(cov_estimates)
 
   # Estimate the variance
   var_estimates <- .EstimateVariance(
