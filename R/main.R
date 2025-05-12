@@ -105,6 +105,8 @@ MLcovar <- function(
 #' @param seed_value The seed value for the random number generator. Default is
 #'  drawn from a uniform between 1 and 1e7. When use_parallel is FALSE, the seed
 #'  value specified here does not affect the results. 
+#' @param cluster_var_name The name of the variable that indicates the cluster. 
+#'   When provided, the cluster bootstrap will be used.
 #' 
 #' @return A named list of options.
 #' @seealso [MLcovar()]
@@ -116,7 +118,8 @@ SetOptions <- function(
     use_parallel = TRUE,
     n_cores = parallel::detectCores() - 1,
     seed_value = floor(runif(1, 1, 1e7)),
-    debug_mode = TRUE) {
+    cluster_var_name = NULL,
+    debug_mode = FALSE) {
 
   # Check inputs
   if (!is.numeric(n_boot) || n_boot <= 0) {

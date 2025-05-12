@@ -10,7 +10,8 @@ SetOptions(
   use_parallel = TRUE,
   n_cores = parallel::detectCores() - 1,
   seed_value = floor(runif(1, 1, 1e+07)),
-  debug_mode = TRUE
+  cluster_var_name = NULL,
+  debug_mode = FALSE
 )
 }
 \arguments{
@@ -31,6 +32,9 @@ ignored if use_parallel is FALSE.}
 \item{seed_value}{The seed value for the random number generator. Default is
 drawn from a uniform between 1 and 1e7. When use_parallel is FALSE, the seed
 value specified here does not affect the results.}
+
+\item{cluster_var_name}{The name of the variable that indicates the cluster.
+When provided, the cluster bootstrap will be used.}
 }
 \value{
 A named list of options.
