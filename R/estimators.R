@@ -64,7 +64,7 @@
 #' 
 #' @param cov_estimates A list of bootstrap variance-covariance estimates.
 #' @noRd
-.EstimateOptimalCoefficients <- function(cov_estimates, prop, n_ell) {
+.EstimateOptimalCoefficients <- function(cov_estimates) {
   vcov_labeled <- cov_estimates$vcov_labeled
   # Covariance between the main and proxy model estimates
   #  * [1,1] element is the variance of the main unbiased estimator 
