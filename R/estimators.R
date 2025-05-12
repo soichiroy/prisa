@@ -1,4 +1,7 @@
-
+#' @title Estimators for the main and proxy models
+#'
+#' @noRd 
+#' @inheritParams MLcovar
 .GetPointEstimates <- function(
     main_model,
     proxy_model,
@@ -36,6 +39,8 @@
   )
 }
 
+
+# TODO: Update .GetPointEstimates to replace this function.
 .GetPointEstimatesLabeled <- function(
     main_model,
     proxy_model,
