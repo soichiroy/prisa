@@ -30,3 +30,4 @@ test_that(".CheckClusterSize warns when clusters have insufficient observations"
     "Cluster variable cluster must have at least 2 observations per cluster in the labeled set."
   )
 })
+
