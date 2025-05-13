@@ -10,6 +10,7 @@
 #' @noRd 
 .CheckClusterSize <- function(data, var_cluster) {
   k_min_obs_per_cluster <- 2
+  k_min_clusters <- 5
   # Check if the cluster variable is present in the data
   if (!var_cluster %in% names(data)) {
     stop(paste("Cluster variable", var_cluster, "must be in data."))
@@ -24,6 +25,17 @@
       "must have at least",
       k_min_obs_per_cluster,
       "observations per cluster in the labeled set."
+    ))
+  }
+
+  # Check if the number of clusters is greater than k_min_clusters
+  if (length(nobs_per_cluster) < k_min_clusters) {
+    warning(paste(
+      "Cluster variable",
+      var_cluster,
+      "must have at least",
+      k_min_clusters,
+      "clusters in the labeled set."
     ))
   }
   invisible(data)

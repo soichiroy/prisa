@@ -16,8 +16,6 @@ test_that(".ResampleDataFrame performs cluster sampling correctly", {
   # Cluster sampling
   resampled_data <- .ResampleDataFrame(data, cluster_var = "cluster")
 
-  # Resampled data should have the same number of observations per cluster as
-  # the original data
   expect_equal(
     length(unique(data$cluster)),
     length(unique(resampled_data$id_groups_tmp))
