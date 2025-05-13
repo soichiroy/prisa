@@ -2,6 +2,7 @@
   if (!is.null(options$cluster_var_name)) {
     .CheckClusterSize(data, options$cluster_var_name)
   }
+  invisible(data)
 }
 
 #' Check if clusters have enough observations, otherwise warn
