@@ -109,8 +109,9 @@ MLcovar <- function(
 #'  drawn from a uniform between 1 and 1e7. When use_parallel is FALSE, the seed
 #'  value specified here does not affect the results. 
 #' @param cluster_var_name The name of the variable that indicates the cluster. 
-#'   When provided, the cluster bootstrap will be used.
-#' 
+#'   When provided, the cluster bootstrap will be used. Supports multi-way 
+#'   clustering by providing a vector of variable names (e.g., c("x", "y")).
+#' @param debug_mode A boolean value. If TRUE, the debug mode will be used. 
 #' @return A named list of options.
 #' @seealso [MLcovar()]
 #' @importFrom parallel detectCores
