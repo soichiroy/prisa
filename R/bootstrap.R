@@ -1,9 +1,6 @@
 #' Run bootstrap
 #'
-#' @importFrom parallel makeCluster stopCluster
-#' @importFrom doParallel registerDoParallel
 #' @importFrom foreach foreach %do% %dopar%
-
 #' @import dplyr
 #' @noRd
 .RunBootstrap <- function(
