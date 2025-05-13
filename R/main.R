@@ -41,6 +41,9 @@ MLcovar <- function(
   # Split data into labeled and unlabeled sets
   data_list <- .SplitData(data, labeled_set_var_name)
 
+  # Input check on the labeled data
+  .CheckInput(data_list$dat_labeled, options)
+
   # Get combined estimate
   point_estimate <- .GetPointEstimates(
     main_model,
@@ -105,7 +108,10 @@ MLcovar <- function(
 #' @param seed_value The seed value for the random number generator. Default is
 #'  drawn from a uniform between 1 and 1e7. When use_parallel is FALSE, the seed
 #'  value specified here does not affect the results. 
-#' 
+#' @param cluster_var_name The name of the variable that indicates the cluster. 
+#'   When provided, the cluster bootstrap will be used. Supports multi-way 
+#'   clustering by providing a vector of variable names (e.g., c("x", "y")).
+#' @param debug_mode A boolean value. If TRUE, the debug mode will be used. 
 #' @return A named list of options.
 #' @seealso [MLcovar()]
 #' @importFrom parallel detectCores
@@ -116,7 +122,8 @@ SetOptions <- function(
     use_parallel = TRUE,
     n_cores = parallel::detectCores() - 1,
     seed_value = floor(runif(1, 1, 1e7)),
-    debug_mode = TRUE) {
+    cluster_var_name = NULL,
+    debug_mode = FALSE) {
 
   # Check inputs
   if (!is.numeric(n_boot) || n_boot <= 0) {
@@ -146,7 +153,10 @@ SetOptions <- function(
 #' Split data into labeled and unlabeled sets
 #' @noRd
 .SplitData <- function(data, labeled_set_var_name) {
-
+  # Check if labeled_set_var_name is present in the data
+  if (!labeled_set_var_name %in% names(data)) {
+    stop(paste("The variable", labeled_set_var_name, "must be in the data."))
+  }
   # Check if labeled_set_var_name is binary (0 or 1)
   if (!all(data[[labeled_set_var_name]] %in% c(0, 1))) {
     stop("The labeled_set_var_name variable must be binary (0 or 1).")

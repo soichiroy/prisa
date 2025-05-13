@@ -40,6 +40,14 @@
     foreach::registerDoSEQ()
   }
 
+  var_cluster <- options$cluster_var_name 
+  if (isFALSE(options$debug_mode) && !is.null(var_cluster)) {
+    var_cluster <- NULL
+    message(
+      "Clustering is currently disabled. Use debug_mode = TRUE to enable."
+    )
+  }
+
   # Bootstrap for the labeled data to estimate the variance-covariance matrix
   # of the main estimators based on the labeled data.
   boot_estimate_labeled <- foreach(
@@ -47,10 +55,13 @@
     .combine = rbind,
     .packages = c("dplyr"),
     .inorder = FALSE,
-    .export = c(".GetPointEstimatesLabeled")
+    .export = c(
+      ".GetPointEstimatesLabeled",
+      ".ResampleDataFrame"
+    )
   ) %dopar% {
       data_labeled_resampled <- 
-        slice_sample(data_list$dat_labeled, prop = 1, replace = TRUE)
+        .ResampleDataFrame(data_list$dat_labeled, var_cluster)
       .GetPointEstimatesLabeled(
         main_model,
         proxy_model,
@@ -72,7 +83,6 @@
     ))
   }
 
-
   # Estimate the variance covariance matrix of the biased estimator based on 
   # the unlabeled data or the full data
   data_main <- data_list$dat_full
@@ -82,9 +92,10 @@
     i = seq_len(n_boot),
     .combine = rbind,
     .inorder = FALSE,
-    .packages = c("dplyr")
+    .packages = c("dplyr"),
+    .export = c(".ResampleDataFrame")
   ) %dopar% {
-      data_main_resampled <- slice_sample(data_main, prop = 1, replace = TRUE)
+      data_main_resampled <- .ResampleDataFrame(data_main, var_cluster)
       do.call(proxy_model, c(list(data_main_resampled), args_proxy_model))
   }
 
@@ -102,4 +113,26 @@
     vcov_full = vcov_full,
     vcov_main_diff = vcov_main_diff
   )
+}
+
+#' Resample data frame that allows for cluster sampling
+#' 
+#' @param df A data frame to be resampled.
+#' @param cluster_var A string representing the name of the cluster variable.
+#'  If NULL, the function will perform simple random sampling.``
+#' @return A resampled data frame.
+#' @noRd
+#' @importFrom dplyr slice_sample group_by ungroup across all_of
+.ResampleDataFrame <- function(df, cluster_var) {
+  if (is.null(cluster_var)) {
+    return(slice_sample(df, prop = 1, replace = TRUE))
+  }
+  
+  # Resample the data frame based on the cluster variable
+  resampled_df <- df %>%
+    group_by(across(all_of(cluster_var))) %>%
+    slice_sample(prop = 1, replace = TRUE) %>%
+    ungroup()
+  
+  return(resampled_df)
 }
