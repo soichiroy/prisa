@@ -146,6 +146,7 @@ SetOptions <- function(
     use_parallel = use_parallel,
     n_cores = n_cores,
     seed_value = seed_value,
+    cluster_var_name = cluster_var_name,
     debug_mode = debug_mode
   )
 }
