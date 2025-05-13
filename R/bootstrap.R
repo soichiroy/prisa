@@ -22,9 +22,6 @@
   seed_value <- options$seed_value
   n_cores <- options$n_cores
 
-  n_estimates_labeled <- point_estimate$n_estimates_labeled
-  n_estimates_full <- point_estimate$n_estimates_full
-
   # Register parallel backend
   if (use_parallel) {
     cl <- parallel::makeCluster(n_cores)
