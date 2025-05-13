@@ -1,4 +1,3 @@
-
 #' Run bootstrap
 #' 
 #' @importFrom parallel makeCluster stopCluster
@@ -137,7 +136,7 @@
     ungroup() %>%
     slice_sample(prop = 1, replace = TRUE) %>%
     mutate(id_groups_tmp = row_number()) %>%
-    unnest(cols = c(data))
-  
+    unnest(cols = c("data"))
+
   return(resampled_df)
 }
