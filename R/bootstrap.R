@@ -122,17 +122,22 @@
 #'  If NULL, the function will perform simple random sampling.``
 #' @return A resampled data frame.
 #' @noRd
-#' @importFrom dplyr slice_sample group_by ungroup across all_of
+#' @importFrom dplyr slice_sample across all_of
+#' @importFrom tidyr nest unnest
 .ResampleDataFrame <- function(df, cluster_var) {
   if (is.null(cluster_var)) {
     return(slice_sample(df, prop = 1, replace = TRUE))
   }
   
   # Resample the data frame based on the cluster variable
+  # This operation can be slow for large data frames
   resampled_df <- df %>%
     group_by(across(all_of(cluster_var))) %>%
+    nest() %>%
+    ungroup() %>%
     slice_sample(prop = 1, replace = TRUE) %>%
-    ungroup()
+    mutate(id_groups_tmp = row_number()) %>%
+    unnest(cols = c(data))
   
   return(resampled_df)
 }
