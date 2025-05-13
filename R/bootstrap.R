@@ -3,7 +3,7 @@
 #' @importFrom parallel makeCluster stopCluster
 #' @importFrom doParallel registerDoParallel
 #' @importFrom foreach foreach %do% %dopar%
-#' @importFrom doRNG registerDoRNG
+
 #' @import dplyr
 #' @noRd
 .RunBootstrap <- function(
@@ -23,18 +23,11 @@
   n_cores <- options$n_cores
 
   # Register parallel backend
-  if (use_parallel) {
-    cl <- parallel::makeCluster(n_cores)
-    doParallel::registerDoParallel(cl)
-    doRNG::registerDoRNG(seed_value)
-    on.exit({
-      parallel::stopCluster(cl)
-      foreach::registerDoSEQ()
-    })
-  } else {
-    # When use_parallel is FALSE, use sequential processing
-    foreach::registerDoSEQ()
-  }
+  .SetupParallelBackend(
+    use_parallel = use_parallel,
+    n_cores = n_cores,
+    seed_value = seed_value
+  )
 
   var_cluster <- options$cluster_var_name
   if (isFALSE(options$debug_mode) && !is.null(var_cluster)) {
@@ -138,4 +131,31 @@
     unnest(cols = c("data"))
 
   return(resampled_df)
+}
+
+#' Setup parallel backend for bootstrap
+#'
+#' @importFrom doRNG registerDoRNG
+#' @importFrom foreach registerDoSEQ
+#' @importFrom parallel makeCluster stopCluster
+#' @importFrom doParallel registerDoParallel
+#' @param use_parallel A logical value indicating whether to use parallel
+#'   processing.
+#' @param n_cores The number of cores to be used for parallel processing.
+#' @param seed_value The seed value for the random number generator.
+#' @noRd
+.SetupParallelBackend <- function(use_parallel, n_cores, seed_value) {
+  if (use_parallel) {
+    cl <- parallel::makeCluster(n_cores)
+    doParallel::registerDoParallel(cl)
+    doRNG::registerDoRNG(seed_value)
+    on.exit({
+      parallel::stopCluster(cl)
+      foreach::registerDoSEQ()
+    })
+  } else {
+    # When use_parallel is FALSE, use sequential processing
+    foreach::registerDoSEQ()
+  }
+  invisible(use_parallel)
 }
