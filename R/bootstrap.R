@@ -83,7 +83,6 @@
     ))
   }
 
-
   # Estimate the variance covariance matrix of the biased estimator based on 
   # the unlabeled data or the full data
   data_main <- data_list$dat_full
@@ -116,10 +115,11 @@
   )
 }
 
-#' Resample data frame
+#' Resample data frame that allows for cluster sampling
 #' 
 #' @param df A data frame to be resampled.
 #' @param cluster_var A string representing the name of the cluster variable.
+#'  If NULL, the function will perform simple random sampling.``
 #' @return A resampled data frame.
 #' @noRd
 #' @importFrom dplyr slice_sample group_by ungroup across all_of

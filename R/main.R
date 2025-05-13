@@ -41,6 +41,9 @@ MLcovar <- function(
   # Split data into labeled and unlabeled sets
   data_list <- .SplitData(data, labeled_set_var_name)
 
+  # Input check on the labeled data
+  .CheckInput(data_list$dat_labeled, options)
+
   # Get combined estimate
   point_estimate <- .GetPointEstimates(
     main_model,
@@ -149,7 +152,10 @@ SetOptions <- function(
 #' Split data into labeled and unlabeled sets
 #' @noRd
 .SplitData <- function(data, labeled_set_var_name) {
-
+  # Check if labeled_set_var_name is present in the data
+  if (!labeled_set_var_name %in% names(data)) {
+    stop(paste("The variable", labeled_set_var_name, "must be in the data."))
+  }
   # Check if labeled_set_var_name is binary (0 or 1)
   if (!all(data[[labeled_set_var_name]] %in% c(0, 1))) {
     stop("The labeled_set_var_name variable must be binary (0 or 1).")
