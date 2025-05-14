@@ -29,21 +29,6 @@ test_that("Return correct output from .GetPointEstimates", {
   )
 })
 
-test_that("Return correct output from .GetPointEstimatesLabeled", {
-  labeled_data <- df_list$dat_labeled
-
-  expect_equal(
-    .GetPointEstimatesLabeled(
-      main_model = main_model,
-      proxy_model = proxy_model,
-      data_labeled = labeled_data,
-      args_main_model = list(),
-      args_proxy_model = list()
-    ),
-    c(mean(1:5), mean(1:5) / 2)
-  )
-})
-
 test_that("Check valid form of functions", {
   main_model_invalid <- function(df) {
     return(c(mean(df$x), mean(df$y)))

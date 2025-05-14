@@ -42,19 +42,21 @@
     .packages = c("dplyr"),
     .inorder = FALSE,
     .export = c(
-      ".GetPointEstimatesLabeled",
+      ".GetPointEstimates",
       ".ResampleDataFrame"
     )
   ) %dopar%
     {
-      data_labeled_resampled <-
-        .ResampleDataFrame(data_list$dat_labeled, var_cluster)
-      .GetPointEstimatesLabeled(
+      data_labeled_resampled <- list(
+        dat_labeled = .ResampleDataFrame(data_list$dat_labeled, var_cluster)
+      )
+      .GetPointEstimates(
         main_model,
         proxy_model,
-        data_labeled_resampled,
+        data_labeled_resampled, 
         args_main_model,
-        args_proxy_model
+        args_proxy_model,
+        use_label_only = TRUE
       )
     }
   vcov_labeled <- cov(boot_estimate_labeled)

@@ -7,7 +7,8 @@
     proxy_model,
     data_list,
     args_main_model,
-    args_proxy_model) {
+    args_proxy_model,
+    use_label_only = FALSE) {
 
   # Unbiased estimator
   tau_ell <-
@@ -21,6 +22,15 @@
   delta_ell <- do.call(
     proxy_model, c(list(data_list$dat_labeled), args_proxy_model)
   )
+
+  # Return estimates based on the labeled set
+  if (isTRUE(use_label_only)) {
+    # Return estimates
+    estimates <- c(tau_ell, delta_ell) 
+    return(estimates)
+  }
+
+  # Proxy estimators on the full data
   delta_full <- do.call(
     proxy_model, c(list(data_list$dat_full), args_proxy_model)
   )
@@ -38,32 +48,6 @@
     n_estimates_full = n_estimates_full
   )
 }
-
-
-# TODO: Update .GetPointEstimates to replace this function.
-.GetPointEstimatesLabeled <- function(
-    main_model,
-    proxy_model,
-    data_labeled_resampled,
-    args_main_model,
-    args_proxy_model
-) {
-
-  # Unbiased estimator
-  tau_ell <- do.call(
-    main_model, c(list(data_labeled_resampled), args_main_model)
-  )
-
-  # Biased estimators
-  delta_ell <- do.call(
-    proxy_model, c(list(data_labeled_resampled), args_proxy_model)
-  )
-
-  # Return estimates
-  estimates <- c(tau_ell, delta_ell) 
-  estimates
-}
-
 
 #' Estimate optimal coefficients
 #' 

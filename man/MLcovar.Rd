@@ -159,22 +159,6 @@ fn_true_lm <- function (df) {
 }
 
 ## Prepare estimation models with proxy labels
-fn_proxy_lm_1 <- function (df) {
-  fit <- lm(Y_proxy_1 ~ D_proxy + X1_proxy + X2_proxy, data = df)
-  fit$coefficients
-}
-
-fn_proxy_lm_2 <- function (df) {
-  fit <- lm(Y_proxy_2 ~ D_proxy + X1_proxy + X2_proxy, data = df)
-  fit$coefficients
-}
-
-fn_proxy_lm_12 <- function (df) {
-  fit1 <- lm(Y_proxy_1 ~ D_proxy + X1_proxy + X2_proxy, data = df)
-  fit2 <- lm(Y_proxy_2 ~ D_proxy + X1_proxy + X2_proxy, data = df)
-  c(fit1$coefficients, fit2$coefficients)
-}
-
 fn_proxy_lm <- function(df, method = c("proxy1, proxy2", "proxy_1_2")) {
   method <- match.arg(method)
   if (method == "proxy1") {
