@@ -138,6 +138,15 @@ SetOptions <- function(
   if (n_cores > parallel::detectCores()) {
     stop("n_cores must be less than the total number of cores available.")
   }
+  if (!is.null(cluster_var_name)) {
+    if (!is.character(cluster_var_name)) {
+      stop("cluster_var_name must be a string or a vector of strings.")
+    }
+    if (any(!nzchar(cluster_var_name))) {
+      stop("cluster_var_name must not contain empty strings.")
+    }
+  }
+  if (isTRUE(debug_mode)) message("Running under the debug mode.")
   
   # Return the list of options
   list(
