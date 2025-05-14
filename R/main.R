@@ -135,19 +135,17 @@ SetOptions <- function(
   if (!is.logical(use_parallel)) {
     stop("use_parallel must be a logical value.")
   }
-  if (n_cores > parallel::detectCores()) {
+  if (n_cores > parallel::detectCores() && use_parallel) {
     stop("n_cores must be less than the total number of cores available.")
   }
-  if (!is.null(cluster_var_name)) {
-    if (!is.character(cluster_var_name)) {
-      stop("cluster_var_name must be a string or a vector of strings.")
-    }
-    if (any(!nzchar(cluster_var_name))) {
-      stop("cluster_var_name must not contain empty strings.")
-    }
+  if (!is.null(cluster_var_name) && !is.character(cluster_var_name)) {
+    stop("cluster_var_name must be a string or a vector of strings.")
+  }
+  if (!is.null(cluster_var_name) && any(!nzchar(cluster_var_name))) {
+    stop("cluster_var_name must not contain empty strings.")
   }
   if (isTRUE(debug_mode)) message("Running under the debug mode.")
-  
+
   # Return the list of options
   list(
     n_boot = n_boot,
@@ -173,12 +171,13 @@ SetOptions <- function(
   }
 
   # Split data into labeled and unlabeled sets
-  dat_labeled <- filter(data, !!sym(labeled_set_var_name) == 1)
-  unlabeled_set <- filter(data, !!sym(labeled_set_var_name) == 0)
+  dat_labeled <- dplyr::filter(data, !!sym(labeled_set_var_name) == 1)
+  unlabeled_set <- dplyr::filter(data, !!sym(labeled_set_var_name) == 0)
 
   n_ell <- nrow(dat_labeled)
   n_full <- nrow(data)
   prop <- n_ell / n_full
+
   list(
     dat_labeled = dat_labeled,
     dat_unlabeled = unlabeled_set,
