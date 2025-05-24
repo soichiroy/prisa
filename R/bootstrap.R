@@ -74,7 +74,9 @@
     return(list(
       vcov_labeled = vcov_labeled,
       vcov_full = NULL,
-      vcov_main_diff = NULL
+      vcov_main_diff = NULL,
+      n_main_estimates = n_main_estimates,
+      n_proxy_estimates = n_proxy_estimates
     ))
   }
 
@@ -111,7 +113,9 @@
   list(
     vcov_labeled = vcov_labeled,
     vcov_full = vcov_full,
-    vcov_main_diff = vcov_main_diff
+    vcov_main_diff = vcov_main_diff,
+    n_main_estimates = n_main_estimates,
+    n_proxy_estimates = n_proxy_estimates
   )
 }
 

@@ -95,7 +95,6 @@ peri <- function(
   var_estimates <- .EstimateVariance(
     cov_estimates,
     coef_estimates,
-    point_estimate$n_main_estimates,
     data_list$prop,
     data_list$n_ell,
     options

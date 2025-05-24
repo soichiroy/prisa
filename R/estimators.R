@@ -64,21 +64,28 @@
 
   if (!is.null(vcov_full)) {
     # When the vcov_full is available, estimate the coefficient using the 
-    # following formula:
-    #   A* = Cov(tau_main_ell, tau_proxy_diff) / V(tau_proxy_diff)
+    # full formula: A* = Cov(tau_main_ell, tau_proxy_diff) / V(tau_proxy_diff)
     coef_estimates <- solve(vcov_full, cov_estimates$vcov_main_diff)
     return(coef_estimates)
   }
 
+  #
+  # When use_full is FALSE, use the labeled set estimator to estimate the
+  # coefficients.
+  #
+
+  n_main_estimates <- cov_estimates$n_main_estimates
   vcov_labeled <- cov_estimates$vcov_labeled
   # Covariance between the main and proxy model estimates
   #  * [1,1] element is the variance of the main unbiased estimator 
-  cov_main_proxy <- as.vector(vcov_labeled[1, -1])
+  idx_main <- 1:n_main_estimates
+  cov_main_proxy <- vcov_labeled[-idx_main, idx_main, drop = FALSE]
 
   # When the vcov_full is not available, use the labeled set estimator to
   # estimate the coefficients.
   #  A* = COV(tau_proxy_ell, tau_main_ell) / V(tau_proxy_ell)
-  coef_estimates <- as.vector(solve(vcov_labeled[-1, -1], cov_main_proxy))
+  coef_estimates <-
+    solve(vcov_labeled[-idx_main, -idx_main, drop = FALSE], cov_main_proxy)
   coef_estimates
 }
 
@@ -97,10 +104,11 @@
 .EstimateVariance <- function(
     cov_estimates,
     coef_estimates,
-    n_main_estimates,
     prop,
     n_ell,
     options) {
+
+  n_main_estimates <- cov_estimates$n_main_estimates
 
   # Variance covariance of the main and proxy estimators
   vcov_labeled <- cov_estimates$vcov_labeled
@@ -109,13 +117,15 @@
   var_tau_ell <- diag(vcov_labeled)[1:n_main_estimates]
 
   # vcov_main_diff is NULL when use_full is FALSE.
-  if (is.null(cov_estimates$vcov_main_diff)) {
-    cov_main_proxy <- as.vector(vcov_labeled[1, -1])
+  if (isFALSE(options$use_full)) {
+    n_main_estimates <- cov_estimates$n_main_estimates
+    idx_main <- 1:n_main_estimates
+    cov_main_proxy <- vcov_labeled[idx_main, -idx_main, drop = FALSE]
     # Variance of the proposed estimator:
     #   Additional (1 - prop) scaling because cov_main_proxy is based on the
     #   labeled data.
-    var_est <- var_tau_ell - 
-      (1 - prop) * as.vector(cov_main_proxy %*% coef_estimates) 
+    var_est <- var_tau_ell -
+      (1 - prop) * diag(cov_main_proxy %*% coef_estimates) 
   } else {
     # Use the full formula to estimate the variance
     var_est <- var_tau_ell - 
