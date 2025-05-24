@@ -28,8 +28,7 @@ print.summary.peri <- function(x, digits = 4, ...) {
   cli::cli_h1("Prediction-error Robust Inference (peri) Results")
   cli::cli_h2("Main Estimates")
   print(
-    format(as.data.frame(x$estimates$main), digits = digits),
-    row.names = FALSE
+    format(as.data.frame(x$estimates$main), digits = digits)
   )
   cat("\n\n")
   # Show additional information
@@ -43,8 +42,7 @@ print.summary.peri <- function(x, digits = 4, ...) {
 
   cli::cli_h3("Labeled Only Estimates")
   print(
-    format(as.data.frame(x$estimates$labeled_only), digits = digits),
-    row.names = FALSE
+    format(as.data.frame(x$estimates$labeled_only), digits = digits)
   )
   invisible(x)
 }
@@ -102,19 +100,21 @@ print.summary.peri <- function(x, digits = 4, ...) {
 #' @seealso [peri()]
 #' @export
 #' @importFrom dplyr mutate bind_rows select everything
-#' @importFrom tibble as_tibble
+#' @importFrom tibble as_tibble rownames_to_column
 get_estimates <- function(x) {
   if (!inherits(x, "peri")) {
     stop("The object must be of class 'peri'.")
   }
 
-  df_main <- x$estimates$main
-  df_labeled_only <- x$estimates$labeled_only %>%
-    mutate(elss = x$data_list$n_ell)
+  df_main <- rownames_to_column(x$estimates$main, var = "variable")
+  df_labeled_only <- rownames_to_column(
+    x$estimates$labeled_only,
+    var = "variable"
+  )
   out <- bind_rows(
     mutate(df_main, estimator = "peri"),
     mutate(df_labeled_only, estimator = "labeled_only")
   ) %>%
-    select(estimator, everything())
+    select(variable, estimator, everything())
   as_tibble(out)
 }

@@ -232,7 +232,7 @@ SetOptions <- function(
   std_error <- sqrt(var_estimates$var)
 
   # Standard error of the labeled-only estimator
-  se_labeled_only <- sqrt(cov_estimates$vcov_labeled[1, 1])
+  se_labeled_only <- sqrt(var_estimates$var_labeled_only)
 
   # Main information
   main_df <- data.frame(
@@ -247,7 +247,9 @@ SetOptions <- function(
     estimate = point_estimate$tau_ell,
     std_err = se_labeled_only,
     ci_lower_95 = point_estimate$tau_ell - qnorm(1 - 0.05 / 2) * se_labeled_only,
-    ci_upper_95 = point_estimate$tau_ell + qnorm(1 - 0.05 / 2) * se_labeled_only
+    ci_upper_95 = point_estimate$tau_ell + qnorm(1 - 0.05 / 2) * se_labeled_only,
+    # Add the true sample size for the labeled only estimator
+    elss = data_list$n_ell 
   )
 
   # Other information necessary for the follow-up analysis

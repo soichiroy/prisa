@@ -152,5 +152,5 @@
 
   # Compute the variance reduction factor in terms of ELSS
   elss <- n_ell * var_tau_ell / var_est
-  list(var = var_est, elss = elss)
+  list(var = var_est, elss = elss, var_labeled_only = var_tau_ell)
 }
