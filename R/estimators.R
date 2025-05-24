@@ -2,6 +2,8 @@
 #'
 #' @noRd 
 #' @inheritParams .PredictionErrorRobustInference 
+#' @param use_label_only Boolean. If TRUE, only the labeled set estimates are
+#'   returned. Default is FALSE. 
 .GetPointEstimates <- function(
     main_model,
     proxy_model,
@@ -14,19 +16,22 @@
   tau_ell <-
     do.call(main_model, c(list(data_list$dat_labeled), args_main_model))
 
-  if (length(as.vector(tau_ell)) > 1) {
-    stop("The main_model function must return a scalar value.")
-  }
-
   # Biased estimators
   delta_ell <- do.call(
     proxy_model, c(list(data_list$dat_labeled), args_proxy_model)
   )
 
+  n_main_estimates <- length(tau_ell)
+  n_proxy_estimates <- length(delta_ell)
   # Return estimates based on the labeled set
   if (isTRUE(use_label_only)) {
     # Return estimates
-    estimates <- c(tau_ell, delta_ell) 
+    estimates <- list(
+      tau_ell = tau_ell,
+      delta_ell = delta_ell,
+      n_main_estimates = n_main_estimates,
+      n_proxy_estimates = n_proxy_estimates
+    )
     return(estimates)
   }
 
@@ -38,15 +43,15 @@
   # Create control variate estimators
   delta_diff <- as.vector(delta_ell) - as.vector(delta_full)
   
-  # Return estimates: Assume the first element is the main model estimate
-  estimates <- c(tau_ell, delta_diff)
-  n_estimates_labeled <- length(estimates)
-  n_estimates_full <- length(delta_diff)
-  list(
-    estimates = estimates, 
-    n_estimates_labeled = n_estimates_labeled, 
-    n_estimates_full = n_estimates_full
+  # Return estimates 
+  estimates <- list(
+    tau_ell = tau_ell,
+    delta_diff = delta_diff,
+    n_main_estimates = n_main_estimates,
+    n_proxy_estimates = n_proxy_estimates
   )
+
+  return(estimates)
 }
 
 #' Estimate optimal coefficients
@@ -54,11 +59,6 @@
 #' @param cov_estimates A list of bootstrap variance-covariance estimates.
 #' @noRd
 .EstimateOptimalCoefficients <- function(cov_estimates) {
-  vcov_labeled <- cov_estimates$vcov_labeled
-  # Covariance between the main and proxy model estimates
-  #  * [1,1] element is the variance of the main unbiased estimator 
-  cov_main_proxy <- as.vector(vcov_labeled[1, -1])
-  
   # Variance covariance matrix of the proxy estimator
   vcov_full <- cov_estimates$vcov_full
 
@@ -66,9 +66,14 @@
     # When the vcov_full is available, estimate the coefficient using the 
     # following formula:
     #   A* = Cov(tau_main_ell, tau_proxy_diff) / V(tau_proxy_diff)
-    coef_estimates <- as.vector(solve(vcov_full, cov_estimates$vcov_main_diff))
+    coef_estimates <- solve(vcov_full, cov_estimates$vcov_main_diff)
     return(coef_estimates)
   }
+
+  vcov_labeled <- cov_estimates$vcov_labeled
+  # Covariance between the main and proxy model estimates
+  #  * [1,1] element is the variance of the main unbiased estimator 
+  cov_main_proxy <- as.vector(vcov_labeled[1, -1])
 
   # When the vcov_full is not available, use the labeled set estimator to
   # estimate the coefficients.
@@ -78,11 +83,11 @@
 }
 
 .CombineEstimates <- function(point_estimate, coef_estimates) {
-  tau_ell <- point_estimate[1]
-  delta_diff <- point_estimate[-1]
+  tau_ell <- point_estimate$tau_ell
+  delta_diff <- point_estimate$delta_diff
 
   # Proposed estimator: unbiased + coef * (cv_estimators)
-  combined_estimate <- tau_ell - as.vector(coef_estimates %*% delta_diff) 
+  combined_estimate <- tau_ell - as.vector(t(coef_estimates) %*% delta_diff) 
   combined_estimate
 }
 
@@ -90,17 +95,22 @@
 #' 
 #' @noRd
 .EstimateVariance <- function(
-  cov_estimates, coef_estimates, prop, n_ell, options
-) {
+    cov_estimates,
+    coef_estimates,
+    n_main_estimates,
+    prop,
+    n_ell,
+    options) {
+
   # Variance covariance of the main and proxy estimators
   vcov_labeled <- cov_estimates$vcov_labeled
-  cov_main_proxy <- as.vector(vcov_labeled[1, -1])
 
   # Variance of the original estimator
-  var_tau_ell <- vcov_labeled[1, 1]
+  var_tau_ell <- diag(vcov_labeled)[1:n_main_estimates]
 
   # vcov_main_diff is NULL when use_full is FALSE.
   if (is.null(cov_estimates$vcov_main_diff)) {
+    cov_main_proxy <- as.vector(vcov_labeled[1, -1])
     # Variance of the proposed estimator:
     #   Additional (1 - prop) scaling because cov_main_proxy is based on the
     #   labeled data.
@@ -109,18 +119,18 @@
   } else {
     # Use the full formula to estimate the variance
     var_est <- var_tau_ell - 
-      as.vector(cov_estimates$vcov_main_diff %*% coef_estimates)
+      diag(t(cov_estimates$vcov_main_diff) %*% coef_estimates)
   }
 
   # Check the variance estimate
   var_theoretical_limit <- prop * var_tau_ell
-  if (var_est < var_theoretical_limit && !options$debug_mode) {
+  if (any(var_est < var_theoretical_limit) && !options$debug_mode) {
     stop(
       "Failed variance estimation. Please use use_full = TRUE option instead."
     )
   }
-   
-  if (var_est < var_theoretical_limit && options$debug_mode) {
+
+  if (any(var_est < var_theoretical_limit) && options$debug_mode) {
     warning(
       "Estimated variance is too small.", 
       "Using the theoretical limit instead.", 

@@ -93,16 +93,21 @@ peri <- function(
 
   # Estimate the variance
   var_estimates <- .EstimateVariance(
-    cov_estimates, coef_estimates, data_list$prop, data_list$n_ell, options
+    cov_estimates,
+    coef_estimates,
+    point_estimate$n_main_estimates,
+    data_list$prop,
+    data_list$n_ell,
+    options
   )
 
   # Combine estimates
-  main_estimate <- .CombineEstimates(point_estimate$estimates, coef_estimates)
+  main_estimate <- .CombineEstimates(point_estimate, coef_estimates)
 
   # Prepare output
   output <- .FormatOutput(
     main_estimate,
-    point_estimate$estimates,
+    point_estimate,
     coef_estimates,
     cov_estimates,
     var_estimates,
@@ -240,10 +245,10 @@ SetOptions <- function(
   )
 
   label_only_df <- data.frame(
-    estimate = point_estimate[1],
+    estimate = point_estimate$tau_ell,
     std_err = se_labeled_only,
-    ci_lower_95 = point_estimate[1] - qnorm(1 - 0.05 / 2) * se_labeled_only,
-    ci_upper_95 = point_estimate[1] + qnorm(1 - 0.05 / 2) * se_labeled_only
+    ci_lower_95 = point_estimate$tau_ell - qnorm(1 - 0.05 / 2) * se_labeled_only,
+    ci_upper_95 = point_estimate$tau_ell + qnorm(1 - 0.05 / 2) * se_labeled_only
   )
 
   # Other information necessary for the follow-up analysis

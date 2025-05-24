@@ -76,8 +76,11 @@ and return the quantity of interest (in this case the coefficient in front of $D
 ```{r analysis_fnc}
 # Estimating the linear regression coefficient
 # Main analysis is to regress the labeled outcome on treatment and covariates
-fn_true_lm <- function (df) {
+fn_true_lm <- function (df, use_full = TRUE) {
   fit <- lm(Y ~ D + X1 + X2, data = df)
+  if (use_full) {
+    return(fit$coef)
+  }
   fit$coefficients["D"]
 }
 ```

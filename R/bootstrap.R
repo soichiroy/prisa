@@ -18,6 +18,8 @@
   use_parallel <- options$use_parallel
   seed_value <- options$seed_value
   n_cores <- options$n_cores
+  n_main_estimates <- point_estimate$n_main_estimates
+  n_proxy_estimates <- point_estimate$n_proxy_estimates
 
   # Register parallel backend
   .SetupParallelBackend(
@@ -50,7 +52,7 @@
       data_labeled_resampled <- list(
         dat_labeled = .ResampleDataFrame(data_list$dat_labeled, var_cluster)
       )
-      .GetPointEstimates(
+      estimates <- .GetPointEstimates(
         main_model,
         proxy_model,
         data_labeled_resampled, 
@@ -58,7 +60,11 @@
         args_proxy_model,
         use_label_only = TRUE
       )
+
+      c(estimates$tau_ell, estimates$delta_ell)
     }
+  
+  # unlist main and proxy estimates and compute the covariance
   vcov_labeled <- cov(boot_estimate_labeled)
 
   # Exit the function if boot_full is FALSE (skip the bootstrap for the entire
@@ -89,13 +95,17 @@
       do.call(proxy_model, c(list(data_main_resampled), args_proxy_model))
     }
 
-  # VCOV(tau_proxy_ell - tau_proxy_full)
-  boot_estimate_diff <- boot_estimate_labeled[, -1] - boot_estimate_full
+  # VCOV(delta_ell - delta_full)
+  idx_delta_ell <- (n_main_estimates + 1):(n_main_estimates + n_proxy_estimates)
+  delta_ell <- boot_estimate_labeled[, idx_delta_ell, drop = FALSE]
+  boot_estimate_diff <- delta_ell - boot_estimate_full
   vcov_full <- cov(boot_estimate_diff)
 
-  # Cov(tau_main_ell, tau_proxy_ell - tau_proxy_full)
-  vcov_main_diff <-
-    as.vector(cov(boot_estimate_labeled[, 1], boot_estimate_diff))
+  # Cov(tau_main_ell, delta_ell - delta_full)
+  vcov_main_diff <- cov(
+    boot_estimate_diff,
+    boot_estimate_labeled[, 1:n_main_estimates, drop = FALSE]
+  )
 
   # Return bootstrapped variance-covariance estimates
   list(
