@@ -43,8 +43,8 @@ clustering by providing a vector of variable names (e.g., c("x", "y")).}
 A named list of options.
 }
 \description{
-Returns a list of configuration options to be passed to \code{\link[=MLcovar]{MLcovar()}}.
+Returns a list of configuration options to be passed to \code{\link[=peri]{peri()}}.
 }
 \seealso{
-\code{\link[=MLcovar]{MLcovar()}}
+\code{\link[=peri]{peri()}}
 }

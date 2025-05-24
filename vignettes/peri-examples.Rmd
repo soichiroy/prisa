@@ -1,0 +1,121 @@
+---
+title: "Examples for peri: Prediction-error Robust Inference"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{peri Examples}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# peri: Prediction-error Robust Inference
+
+This vignette demonstrates usage examples for the `peri` function.
+
+```{r setup, include=FALSE}
+library(peri)
+library(dplyr)
+```
+
+# Data Generation and Example Usage
+
+```{r}
+# Helper function
+to_logistic <- function (x) exp(x) / (1 + exp(x))
+
+set.seed(2025)
+n_ell <- 200
+n_u <- 5000
+n_all <- n_ell + n_u
+
+X1 <- rnorm(n = n_all, mean = 0, sd = 1)
+X2 <- rnorm(n = n_all, mean = 0, sd = 1)
+X1_proxy <- X1 + rnorm(n = n_all, mean = 0, sd = 0.2)
+X2_proxy <- X2 + rnorm(n = n_all, mean = 0, sd = 0.2)
+Z <- rnorm(n = n_all, mean = 0, sd = 1)
+Z_proxy <- Z + rnorm(n = n_all, mean = (X1 + X2) / 5, sd = 0.1)
+prob_d <- to_logistic(-0.3 + 2 * Z + 0.4 * X1 + 0.2 * X2)
+D <- rbinom(n = n_all, size = 1, prob = prob_d)
+D_proxy <- rbinom(n = n_all, size = 1, prob = 0.03 + D * 0.94)
+Y <- 0.5 + D + X1 + 1.5 * X2 + rnorm(n = n_all, mean = 0, sd = 1)
+Y_proxy_1 <- Y + rnorm(n = n_all, mean = D * X1 + (1 - D) * X2, sd = 1)
+Y_proxy_2 <- round(Y / 4) * 4 + rnorm(n = n_all, mean = 0, sd = 0.5)
+prob_y <- to_logistic(-0.5 + 2 * D + X1 + X2)
+Y_binary <- rbinom(n = n_all, size = 1, prob = prob_y)
+Y_binary_proxy <- rbinom(n = n_all, size = 1, prob = 0.05 + Y_binary * 0.9)
+
+df <- data.frame(
+  Y = Y,
+  Y_proxy_1 = Y_proxy_1,
+  Y_proxy_2 = Y_proxy_2,
+  Y_binary = Y_binary,
+  Y_binary_proxy = Y_binary_proxy,
+  D = D,
+  D_proxy = D_proxy,
+  Z = Z,
+  Z_proxy = Z_proxy,
+  X1 = X1,
+  X2 = X2,
+  X1_proxy = X1_proxy,
+  X2_proxy = X2_proxy,
+  is_labeled = c(rep(1, n_ell), rep(0, n_u))
+) |> 
+  dplyr::mutate(Y = dplyr::if_else(is_labeled == 1, Y, NA_real_),
+                D = dplyr::if_else(is_labeled == 1, D, NA_real_),
+                X1 = dplyr::if_else(is_labeled == 1, X1, NA_real_),
+                X2 = dplyr::if_else(is_labeled == 1, X2, NA_real_),
+                Z = dplyr::if_else(is_labeled == 1, Z, NA_real_))
+
+# Example: Estimating the outcome mean
+fn_true_mean <- function (df) mean(df$Y)
+fn_proxy_mean <- function (df) mean(df$Y_proxy_1)
+
+fit_mean <- peri(
+  main_model = fn_true_mean,
+  proxy_model = fn_proxy_mean,
+  data = df,
+  labeled_set_var_name = "is_labeled",
+  options = SetOptions(n_boot = 500, use_full = TRUE)
+)
+summary(fit_mean)
+
+# Example: Estimating the treatment effect
+fn_true_te <- function (df) mean(df$Y[df$D == 1]) - mean(df$Y[df$D == 0])
+fn_proxy_te <- function (df) mean(df$Y_proxy_1[df$D_proxy == 1]) - mean(df$Y_proxy_1[df$D_proxy == 0])
+
+fit_te <- peri(
+  main_model = fn_true_te,
+  proxy_model = fn_proxy_te,
+  data = df,
+  labeled_set_var_name = "is_labeled",
+  options = SetOptions(n_boot = 500, use_full = TRUE)
+)
+summary(fit_te)
+
+# Example: Estimating with binary outcome
+fn_true_mean_bin <- function (df) mean(df$Y_binary)
+fn_proxy_mean_bin <- function (df) mean(df$Y_binary_proxy)
+
+fit_mean_bin <- peri(
+  main_model = fn_true_mean_bin,
+  proxy_model = fn_proxy_mean_bin,
+  data = df,
+  labeled_set_var_name = "is_labeled",
+  options = SetOptions(n_boot = 500, use_full = TRUE)
+)
+summary(fit_mean_bin)
+
+# Example: Estimating with binary treatment
+fn_true_te_bin <- function (df) mean(df$Y_binary[df$D == 1]) - mean(df$Y_binary[df$D == 0])
+fn_proxy_te_bin <- function (df) mean(df$Y_binary_proxy[df$D_proxy == 1]) - mean(df$Y_binary_proxy[df$D_proxy == 0])
+
+fit_te_bin <- peri(
+  main_model = fn_true_te_bin,
+  proxy_model = fn_proxy_te_bin,
+  data = df,
+  labeled_set_var_name = "is_labeled",
+  options = SetOptions(n_boot = 500, use_full = TRUE)
+)
+summary(fit_te_bin)
+```
+
+

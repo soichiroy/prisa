@@ -1,6 +1,14 @@
-# To be renamed after the package name is finalized
+#' @title Prediction-error Robust Inference for Statistical Analysis
+#'
+#' @inheritParams .PredictionErrorRobustInference
+#' @seealso [SetOptions()]
+#' @example inst/examples/example-peri-minimal.R
+#' @export
+peri <- function(...) {
+  .PredictionErrorRobustInference(...)
+}
 
-#' @title Proposed estimator
+#' @title Main implementation of the Prediction-error Robust Inference 
 #' 
 #' @param main_model A function that estimates the target parameter with the 
 #'  labeled data. The function takes the data as the first argument and returns
@@ -25,9 +33,12 @@
 #' @param args_proxy_model A list of additional arguments to be passed to the
 #'  proxy_model function. The list must be named.
 #' @seealso [SetOptions()]
-#' @example examples/example-MLcovar.R
+#' @example inst/examples/example-peri-minimal.R
+#' @examplesIf interactive()
+#'   # See full examples in inst/examples/example-peri.R
+#'   # Or run: source(system.file("examples/example-peri.R", package = "peri"))
 #' @export
-MLcovar <- function(
+.PredictionErrorRobustInference <- function(
   main_model,
   proxy_model,
   data,
@@ -85,14 +96,14 @@ MLcovar <- function(
     options
   )
 
-  class(output) <- c(class(output), "MLcovar")
+  class(output) <- c(class(output), "peri")
   output
 }
 
 
 #' Set options for the main function
 #' 
-#' Returns a list of configuration options to be passed to [MLcovar()].
+#' Returns a list of configuration options to be passed to [peri()].
 #' 
 #' @param n_boot The number of bootstrap samples for the labeled data. Default 
 #'  is 500. When use_full is TRUE, the full data is also used for the bootstrap.
@@ -112,7 +123,7 @@ MLcovar <- function(
 #'   clustering by providing a vector of variable names (e.g., c("x", "y")).
 #' @param debug_mode A boolean value. If TRUE, the debug mode will be used. 
 #' @return A named list of options.
-#' @seealso [MLcovar()]
+#' @seealso [peri()]
 #' @importFrom parallel detectCores
 #' @export 
 SetOptions <- function(

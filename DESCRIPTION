@@ -1,12 +1,17 @@
-Package: MLCovar
-Title: What the Package Does (One Line, Title Case)
+Package: peri 
+Title: Prediction-error Robust Inference for Statistical Analysis 
 Version: 0.0.0.9000
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+    c(
+        person("Soichiro", "Yamauchi", email = "soichiro@alumni.princeton.edu", role = c("aut", "cre"),
+               comment = c(ORCID = "0000-0003-0554-2717")),
+        person("Hiroto", "Katsumata", email = "hrt.katsumata@gmail.com", role = "aut",
+               comment = c(ORCID = "0000-0001-5901-8844"))
+    )
+Description: Provides a framework for prediction-error robust inference for
+    statistical analysis. The package implements the method proposed in
+    Katsumata and Yamauchi (2025). 
+License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2

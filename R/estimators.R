@@ -1,7 +1,7 @@
 #' @title Estimators for the main and proxy models
 #'
 #' @noRd 
-#' @inheritParams MLcovar
+#' @inheritParams .PredictionErrorRobustInference 
 .GetPointEstimates <- function(
     main_model,
     proxy_model,

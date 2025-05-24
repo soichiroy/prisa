@@ -3,7 +3,7 @@
 #' @param result an object of class “MLcovar”, usually, a result of a call to \code{\link{MLcovar}}.
 #' @param zeta A vector of variance reduction factor ([0, 1]).
 #'   Default is between 0.05 and 0.8.
-#' @example examples/example-accuracy.R
+#' @example inst/examples/example-accuracy.R
 #' @export
 accuracy <- function(
   result,

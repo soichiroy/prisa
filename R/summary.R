@@ -6,25 +6,25 @@
 #' @param ... Additional arguments.
 #' @return A list containing the summary of the results.
 #' @export
-summary.MLcovar <- function(object, ...) {
-  if (!inherits(object, "MLcovar")) {
-    stop("The object must be of class 'MLcovar'.")
+summary.peri <- function(object, ...) {
+  if (!inherits(object, "peri")) {
+    stop("The object must be of class 'peri'.")
   }
   
   estimates <- object$estimates
-  class(estimates) <- c(class(estimates), "summary.MLcovar")
+  class(estimates) <- c(class(estimates), "summary.peri")
   return(estimates)
 }
 
-#' @title Print summary for MLcovar results
+#' @title Print summary for peri results
 #' 
-#' @description Prints the summary of the results from the MLcovar function.
+#' @description Prints the summary of the results from the peri function.
 #' 
-#' @param x An object of class "summary.MLcovar" returned by the summary.MLcovar
+#' @param x An object of class "summary.peri" returned by the summary.peri
 #'  function.
 #' @param ... Additional arguments.
 #' @export
-print.summary.MLcovar <- function(x, ...) {
+print.summary.peri <- function(x, ...) {
   cat("Estimates of the parameters:\n")
   print(as.data.frame(x))
   invisible(x)
