@@ -49,11 +49,27 @@ Prediction-error Robust Inference for Statistical Analysis
 }
 \examples{
 # Minimal example for peri function
-set.seed(123)
-df <- data.frame(Y = rnorm(10), Y_proxy = rnorm(10), is_labeled = c(rep(1, 5), rep(0, 5)))
-fn_true <- function(df) mean(df$Y)
-fn_proxy <- function(df) mean(df$Y_proxy)
-peri(main_model = fn_true, proxy_model = fn_proxy, data = df, labeled_set_var_name = "is_labeled")
+set.seed(1234)
+
+# True labels (unobserved)
+Y_true <- rnorm(5100)
+df <- data.frame(
+  Y_label = c(Y_true[1:100], rep(NA, 5000)), 
+  Y_proxy = round(Y_true / 4) * 4 + rnorm(n = 5100, mean = 0, sd = 0.5),
+  is_labeled = c(rep(1, 100), rep(0, 5000))
+)
+
+# Main model is to take the sample mean of the labeled outcome
+fn_true <- function(df) mean(df$Y_label, na.rm = TRUE)
+# Proxy model is to take the sample mean of the predicted outcome
+fn_proxy <- function(df) mean(df$Y_proxy, na.rm = TRUE)
+
+fit <- peri(
+  main_model = fn_true,
+  proxy_model = fn_proxy,
+  data = df,
+  labeled_set_var_name = "is_labeled"
+)
 \dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
   # See full examples in inst/examples/example-peri.R
   # Or run: source(system.file("examples/example-peri.R", package = "peri"))
