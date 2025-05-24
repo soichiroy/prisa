@@ -78,7 +78,7 @@ peri <- function(
   )
 
   # Naive bootstrap implementation
-  cov_estimates <- .RunBootstrap(
+  bootstrap_estimates <- .RunBootstrap(
     main_model,
     proxy_model,
     data_list,
@@ -86,6 +86,12 @@ peri <- function(
     options,
     args_main_model,
     args_proxy_model
+  )
+
+  cov_estimates <- .ProcessCovarianceEstimates(
+    bootstrap_estimates,
+    point_estimate$n_main_estimates,
+    options$use_full
   )
 
   # Estimate optimal coefficients
@@ -108,6 +114,7 @@ peri <- function(
     main_estimate,
     point_estimate,
     coef_estimates,
+    bootstrap_estimates,
     cov_estimates,
     var_estimates,
     data_list,
@@ -223,6 +230,7 @@ SetOptions <- function(
     main_estimate,
     point_estimate,
     coef_estimates,
+    bootstrap_estimates,
     cov_estimates,
     var_estimates,
     data_list,
@@ -257,6 +265,7 @@ SetOptions <- function(
     point_estimate = point_estimate,
     coef_estimates = coef_estimates,
     cov_estimates = cov_estimates,
+    bootstrap_estimates = bootstrap_estimates,
     var_estimates = var_estimates
   )
   

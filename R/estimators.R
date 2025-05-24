@@ -56,36 +56,17 @@
 
 #' Estimate optimal coefficients
 #' 
-#' @param cov_estimates A list of bootstrap variance-covariance estimates.
+#' @param cov_estimates An output from .ProcessCovarianceEstimates.
 #' @noRd
 .EstimateOptimalCoefficients <- function(cov_estimates) {
-  # Variance covariance matrix of the proxy estimator
-  vcov_full <- cov_estimates$vcov_full
-
-  if (!is.null(vcov_full)) {
-    # When the vcov_full is available, estimate the coefficient using the 
-    # full formula: A* = Cov(tau_main_ell, tau_proxy_diff) / V(tau_proxy_diff)
-    coef_estimates <- solve(vcov_full, cov_estimates$vcov_main_diff)
-    return(coef_estimates)
-  }
-
   #
-  # When use_full is FALSE, use the labeled set estimator to estimate the
-  # coefficients.
+  # When the vcov_full is available, estimate the coefficient using the 
+  # full formula: A* = Cov(tau_main_ell, tau_proxy_diff) / V(tau_proxy_diff)
   #
-
-  n_main_estimates <- cov_estimates$n_main_estimates
-  vcov_labeled <- cov_estimates$vcov_labeled
-  # Covariance between the main and proxy model estimates
-  #  * [1,1] element is the variance of the main unbiased estimator 
-  idx_main <- 1:n_main_estimates
-  cov_main_proxy <- vcov_labeled[-idx_main, idx_main, drop = FALSE]
-
   # When the vcov_full is not available, use the labeled set estimator to
   # estimate the coefficients.
   #  A* = COV(tau_proxy_ell, tau_main_ell) / V(tau_proxy_ell)
-  coef_estimates <-
-    solve(vcov_labeled[-idx_main, -idx_main, drop = FALSE], cov_main_proxy)
+  coef_estimates <- solve(cov_estimates$vcov_delta, cov_estimates$cov_delta_tau)
   coef_estimates
 }
 
@@ -108,29 +89,22 @@
     n_ell,
     options) {
 
-  n_main_estimates <- cov_estimates$n_main_estimates
-
   # Variance covariance of the main and proxy estimators
   vcov_labeled <- cov_estimates$vcov_labeled
 
-  # Variance of the original estimator
-  var_tau_ell <- diag(vcov_labeled)[1:n_main_estimates]
+  # Variance of the labeled-only estimator
+  var_tau_ell <- diag(cov_estimates$vcov_tau) 
 
-  # vcov_main_diff is NULL when use_full is FALSE.
-  if (isFALSE(options$use_full)) {
-    n_main_estimates <- cov_estimates$n_main_estimates
-    idx_main <- 1:n_main_estimates
-    cov_main_proxy <- vcov_labeled[idx_main, -idx_main, drop = FALSE]
-    # Variance of the proposed estimator:
-    #   Additional (1 - prop) scaling because cov_main_proxy is based on the
-    #   labeled data.
-    var_est <- var_tau_ell -
-      (1 - prop) * diag(cov_main_proxy %*% coef_estimates) 
-  } else {
-    # Use the full formula to estimate the variance
-    var_est <- var_tau_ell - 
-      diag(t(cov_estimates$vcov_main_diff) %*% coef_estimates)
-  }
+  # Scaling adjustment factor
+  #
+  # Variance of the proposed estimator:
+  #   Additional (1 - prop) scaling because cov_main_proxy is based on the
+  #   labeled data.
+  #
+  # Use the full formula to estimate the variance when use_full = TRUE.
+  scale_const <- ifelse(options$use_full, 1, 1 - prop)
+  vcov_reduction <- t(cov_estimates$cov_delta_tau) %*% coef_estimates
+  var_est <- var_tau_ell - scale_const * diag(vcov_reduction)
 
   # Check the variance estimate
   var_theoretical_limit <- prop * var_tau_ell
@@ -148,7 +122,6 @@
     )
     var_est <- var_theoretical_limit
   }
-  
 
   # Compute the variance reduction factor in terms of ELSS
   elss <- n_ell * var_tau_ell / var_est

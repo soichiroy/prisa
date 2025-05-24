@@ -119,6 +119,55 @@
   )
 }
 
+#' Process the bootstrap-based variance-covariance estimates
+#' 
+#' @param cov_estimates An output of the function \code{\link{.RunBootstrap}}.
+#' @param n_main_estimates The number of main estimates.
+#' @param use_full Boolean. Passed from the SetOptions function. 
+#' @noRd
+.ProcessCovarianceEstimates <- function(
+    cov_estimates,
+    n_main_estimates,
+    use_full) {
+
+  if (n_main_estimates < 1) {
+    stop("n_main_estimates must be greater than 1.")
+  }
+
+  # Variance covariance matrix of the main estimator
+  idx_main <- 1:n_main_estimates
+  vcov_tau <- cov_estimates$vcov_labeled[idx_main, idx_main, drop = FALSE]
+
+  if (use_full) {
+    # Variance-covariance matrix of the proxy estimator. 
+    # When use_full is TRUE, this vcov is estimated based on the difference of 
+    # delta (proxy estimators) between the labeled and full data.
+    vcov_delta <- cov_estimates$vcov_full
+
+    # Covariance matrix between the main and proxy estimators
+    cov_delta_tau <- cov_estimates$vcov_main_diff
+
+    return(list(
+      vcov_tau = vcov_tau,
+      vcov_delta = vcov_delta,
+      cov_delta_tau = cov_delta_tau
+    ))
+  }
+
+  # Variance covariance matrix of the proxy estimator
+  # When use_full is FALSE, this vcov is estimated based on the labeled data.
+  vcov_delta <- cov_estimates$vcov_labeled[-idx_main, -idx_main, drop = FALSE]
+
+  # Covariance matrix between the main and proxy estimators
+  cov_delta_tau <- cov_estimates$vcov_labeled[-idx_main, idx_main, drop = FALSE]
+
+  list(
+    vcov_tau = vcov_tau,
+    vcov_delta = vcov_delta,
+    cov_delta_tau = cov_delta_tau
+  )
+}
+
 #' Resample data frame that allows for cluster sampling
 #'
 #' @param df A data frame to be resampled.
