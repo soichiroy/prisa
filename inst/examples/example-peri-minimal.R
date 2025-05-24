@@ -10,9 +10,14 @@ df <- data.frame(
 )
 
 # Main model is to take the sample mean of the labeled outcome
-fn_true <- function(df) mean(df$Y_label, na.rm = TRUE)
+fn_true <- function(df) {
+  mean(df$Y_label, na.rm = TRUE)
+}
+
 # Proxy model is to take the sample mean of the predicted outcome
-fn_proxy <- function(df) mean(df$Y_proxy, na.rm = TRUE)
+fn_proxy <- function(df) {
+  mean(df$Y_proxy, na.rm = TRUE)
+}
 
 fit <- peri(
   main_model = fn_true,

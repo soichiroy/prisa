@@ -71,7 +71,7 @@ print.summary.peri <- function(x, digits = 4, ...) {
 #' @importFrom cli cli_h3 cli_ul
 #' @noRd
 .PrintEfficiencyGain <- function(estimates, data_list) {
-  std_err_reduction <- estimates$main$std_err / estimates$labeled_only$std_err 
+  std_err_reduction <- estimates$main$std_err / estimates$labeled_only$std_err
   std_err_reduction <- round(100 * (std_err_reduction - 1))
   elss <- estimates$main$elss
   n_ell <- data_list$n_ell
@@ -79,8 +79,43 @@ print.summary.peri <- function(x, digits = 4, ...) {
   cli::cli_h3("Efficiency Gain from PERI")
   cli::cli_ul(c(
     "Effective Labeled Sample Size (ELSS): {round(elss, 3)}",
-    "Contribution from unlabeled set: {round(elss - n_ell, 1)}",
+    "Contribution from the unlabeled set: {round(elss - n_ell, 1)}",
     "Standard Error Reduction: {std_err_reduction}%"
   ))
+  invisible(estimates)
+}
 
+#' @title Obtain estimation results
+#'
+#' @param x An object of class "peri" returned by the peri function.
+#' @return A tibble with the following columns:
+#' \describe{
+#'   \item{estimator}{The type of estimator used (Prediction-error robust
+#'    inference (peri) or labeled_only).}
+#'   \item{estimate}{The estimated value.}
+#'   \item{std_err}{The standard error of the estimate.}
+#'   \item{ci_lower_95}{The lower bound of the 95% confidence interval.}
+#'   \item{ci_upper_95}{The upper bound of the 95% confidence interval.}
+#'   \item{elss}{The effective labeled sample size. For the labeled_only
+#'    estimator, this corresponds to the number of labeled observations. For the
+#'    peri, the estimated ELSS is shown.}
+#' }
+#' @seealso [peri()]
+#' @export
+#' @importFrom dplyr mutate bind_rows select everything
+#' @importFrom tibble as_tibble
+get_estimates <- function(x) {
+  if (!inherits(x, "peri")) {
+    stop("The object must be of class 'peri'.")
+  }
+
+  df_main <- x$estimates$main
+  df_labeled_only <- x$estimates$labeled_only %>%
+    mutate(elss = x$data_list$n_ell)
+  out <- bind_rows(
+    mutate(df_main, estimator = "peri"),
+    mutate(df_labeled_only, estimator = "labeled_only")
+  ) %>%
+    select(estimator, everything())
+  as_tibble(out)
 }
