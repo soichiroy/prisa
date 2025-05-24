@@ -55,7 +55,7 @@
       estimates <- .GetPointEstimates(
         main_model,
         proxy_model,
-        data_labeled_resampled, 
+        data_labeled_resampled,
         args_main_model,
         args_proxy_model,
         use_label_only = TRUE
@@ -63,7 +63,7 @@
 
       c(estimates$tau_ell, estimates$delta_ell)
     }
-  
+
   # unlist main and proxy estimates and compute the covariance
   vcov_labeled <- cov(boot_estimate_labeled)
 
@@ -120,27 +120,31 @@
 }
 
 #' Process the bootstrap-based variance-covariance estimates
-#' 
+#'
 #' @param cov_estimates An output of the function \code{\link{.RunBootstrap}}.
 #' @param n_main_estimates The number of main estimates.
-#' @param use_full Boolean. Passed from the SetOptions function. 
+#' @param use_full Boolean. Passed from the SetOptions function.
 #' @noRd
 .ProcessCovarianceEstimates <- function(
-    cov_estimates,
-    n_main_estimates,
-    use_full) {
-
+  cov_estimates,
+  n_main_estimates,
+  use_full
+) {
   if (n_main_estimates < 1) {
     stop("n_main_estimates must be greater than 1.")
   }
 
-  # Variance covariance matrix of the main estimator
+  # Variance covariance matrix of the main (labeled only) estimator
   idx_main <- 1:n_main_estimates
   vcov_tau <- cov_estimates$vcov_labeled[idx_main, idx_main, drop = FALSE]
 
-  if (use_full) {
-    # Variance-covariance matrix of the proxy estimator. 
-    # When use_full is TRUE, this vcov is estimated based on the difference of 
+  if (
+    use_full &&
+      !is.null(cov_estimates$vcov_full) &&
+      !is.null(cov_estimates$vcov_main_diff)
+  ) {
+    # Variance-covariance matrix of the proxy estimator.
+    # When use_full is TRUE, this vcov is estimated based on the difference of
     # delta (proxy estimators) between the labeled and full data.
     vcov_delta <- cov_estimates$vcov_full
 
