@@ -9,7 +9,8 @@ peri(
   proxy_model,
   data,
   labeled_set_var_name,
-  options = SetOptions(),
+  options = SetOptions(n_boot = 500, use_full = TRUE, use_parallel = TRUE, n_cores =
+    parallel::detectCores() - 1, cluster_var_name = NULL),
   args_main_model = list(),
   args_proxy_model = list()
 )
