@@ -70,6 +70,8 @@ fit <- peri(
   data = df,
   labeled_set_var_name = "is_labeled"
 )
+
+summary(fit)
 \dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
   # See full examples in inst/examples/example-peri.R
   # Or run: source(system.file("examples/example-peri.R", package = "peri"))

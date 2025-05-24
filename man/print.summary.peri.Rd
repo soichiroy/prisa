@@ -4,7 +4,7 @@
 \alias{print.summary.peri}
 \title{Print summary for peri results}
 \usage{
-\method{print}{summary.peri}(x, ...)
+\method{print}{summary.peri}(x, digits = 4, ...)
 }
 \arguments{
 \item{x}{An object of class "summary.peri" returned by the summary.peri

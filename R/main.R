@@ -236,9 +236,14 @@ SetOptions <- function(
     std_err = std_error,
     ci_lower_95 = main_estimate - qnorm(1 - 0.05 / 2) * std_error,
     ci_upper_95 = main_estimate + qnorm(1 - 0.05 / 2) * std_error,
-    elss = var_estimates$elss,
-    labeled_only = point_estimate[1],
-    labeled_only_std_err = se_labeled_only
+    elss = var_estimates$elss
+  )
+
+  label_only_df <- data.frame(
+    estimate = point_estimate[1],
+    std_err = se_labeled_only,
+    ci_lower_95 = point_estimate[1] - qnorm(1 - 0.05 / 2) * se_labeled_only,
+    ci_upper_95 = point_estimate[1] + qnorm(1 - 0.05 / 2) * se_labeled_only
   )
 
   # Other information necessary for the follow-up analysis
@@ -250,7 +255,7 @@ SetOptions <- function(
   )
   
   list(
-    estimates = main_df,
+    estimates = list(main = main_df, labeled_only = label_only_df),
     additional_info = output_quantities,
     data_list = data_list[c("n_ell", "n_full", "prop")],
     options = options

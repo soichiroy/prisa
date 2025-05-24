@@ -20,3 +20,5 @@ fit <- peri(
   data = df,
   labeled_set_var_name = "is_labeled"
 )
+
+summary(fit)
