@@ -2,7 +2,6 @@
 
 S3method(print,summary.peri)
 S3method(summary,peri)
-export(.PredictionErrorRobustInference)
 export(SetOptions)
 export(accuracy)
 export(peri)

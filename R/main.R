@@ -1,43 +1,57 @@
 #' @title Prediction-error Robust Inference for Statistical Analysis
 #'
-#' @inheritParams .PredictionErrorRobustInference
-#' @seealso [SetOptions()]
-#' @example inst/examples/example-peri-minimal.R
-#' @export
-peri <- function(...) {
-  .PredictionErrorRobustInference(...)
-}
-
-#' @title Main implementation of the Prediction-error Robust Inference 
-#' 
 #' @param main_model A function that estimates the target parameter with the 
-#'  labeled data. The function takes the data as the first argument and returns
-#'  the estimate of the target parameter. The target parameter must be a scalar.
-#'  The additional arguments to the main_model function must be provided in the
-#'  args_main_model argument. 
-#' @param proxy_model A function that estimates the target parameter with the
-#'  proxy variables. The function takes the data as the first argument and
-#'  returns the estimate of the target parameter. The target parameter must be a
-#'  scalar or a vector. The additional arguments to the proxy_model function must be
-#'  provided in the args_proxy_model argument. 
+#'   labeled data. The function takes the data as the first argument and 
+#'   returns the estimate of the target parameter. The target parameter must 
+#'   be a scalar. The additional arguments to the main_model function must be 
+#'   provided in the args_main_model argument.
+#' @param proxy_model A function that estimates the target parameter with the 
+#'   proxy variables. The function takes the data as the first argument and 
+#'   returns the estimate of the target parameter. The target parameter must 
+#'   be a scalar or a vector. The additional arguments to the proxy_model 
+#'   function must be provided in the args_proxy_model argument.
 #' @param data A data frame that contains the labeled and unlabeled data. The 
-#'  rows that contains the labeled data must be indicated by a variable in the
-#'  data frame. The variable name must be provided in the labeled_set_var_name
-#'  argument.
+#'   rows that contains the labeled data must be indicated by a variable in 
+#'   the data frame. The variable name must be provided in the 
+#'   labeled_set_var_name argument.
 #' @param labeled_set_var_name The name of the variable that indicates whether 
-#'  rows are labeled or not. The variable must be binary.
-#' @param options A list of options for the analysis. The values must be set by
-#'  the [SetOptions()].
-#' @param args_main_model A list of additional arguments to be passed to the
-#'  main_model function. The list must be named.
-#' @param args_proxy_model A list of additional arguments to be passed to the
-#'  proxy_model function. The list must be named.
+#'   rows are labeled or not. The variable must be binary.
+#' @param options A list of options for the analysis. The values must be set 
+#'   by the [SetOptions()].
+#' @param args_main_model A list of additional arguments to be passed to the 
+#'   main_model function. The list must be named.
+#' @param args_proxy_model A list of additional arguments to be passed to the 
+#'   proxy_model function. The list must be named.
 #' @seealso [SetOptions()]
 #' @example inst/examples/example-peri-minimal.R
 #' @examplesIf interactive()
 #'   # See full examples in inst/examples/example-peri.R
 #'   # Or run: source(system.file("examples/example-peri.R", package = "peri"))
 #' @export
+peri <- function(
+  main_model,
+  proxy_model,
+  data,
+  labeled_set_var_name,
+  options = SetOptions(),
+  args_main_model = list(),
+  args_proxy_model = list()
+) {
+  .PredictionErrorRobustInference(
+    main_model = main_model,
+    proxy_model = proxy_model,
+    data = data,
+    labeled_set_var_name = labeled_set_var_name,
+    options = options,
+    args_main_model = args_main_model,
+    args_proxy_model = args_proxy_model
+  )
+}
+
+#' @title Main implementation of the Prediction-error Robust Inference 
+#' 
+#' @inheritParams peri
+#' @noRd 
 .PredictionErrorRobustInference <- function(
   main_model,
   proxy_model,
