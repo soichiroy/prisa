@@ -7,6 +7,6 @@
 # * https://testthat.r-lib.org/articles/special-files.html
 
 library(testthat)
-library(MLCovar)
+library(peri)
 
-test_check("MLCovar")
+test_check("peri")
