@@ -9,7 +9,7 @@ df <- data.frame(
   is_labeled = c(rep(1, 100), rep(0, 5000))
 )
 
-# Maim model is to take the sample mean of the labeled outcome
+# Main model is to take the sample mean of the labeled outcome
 fn_true <- function(df) mean(df$Y_label, na.rm = TRUE)
 # Proxy model is to take the sample mean of the predicted outcome
 fn_proxy <- function(df) mean(df$Y_proxy, na.rm = TRUE)
