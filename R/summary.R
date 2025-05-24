@@ -31,8 +31,7 @@ print.summary.peri <- function(x, digits = 4, ...) {
     format(as.data.frame(x$estimates$main), digits = digits),
     row.names = FALSE
   )
-  cat("\n")
-
+  cat("\n\n")
   # Show additional information
   cli::cli_h2("Additional Information")
   .PrintEfficiencyGain(

@@ -1,0 +1,194 @@
+---
+title: "linear-regression"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{linear-regression}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(peri)
+library(dplyr)
+```
+
+
+## Data Example
+
+As an example, we simulate variables.
+In this simulated dataset, we set the number of "labeled" observations 
+to 200, and the number of "unlabeled" observations to 5,000.
+```{r}
+# Setup
+set.seed(2025)
+n_ell <- 200
+n_u <- 5000
+n_all <- n_ell + n_u
+
+# Covariates
+X1 <- rnorm(n = n_all, mean = 0, sd = 1)
+X2 <- rnorm(n = n_all, mean = 0, sd = 1)
+
+# Treatment indicator
+logistic <- function (x) exp(x) / (1 + exp(x)) 
+prob_d <- logistic(-0.3 + 0.4 * X1 + 0.2 * X2)
+D <- rbinom(n = n_all, size = 1, prob = prob_d)
+
+# True outcome model for linear regression model
+Y <- 0.5 + D + X1 + 1.5 * X2 + rnorm(n = n_all, mean = 0, sd = 1)
+
+# Create a proxy variable. 
+Y_proxy_1 <- Y + rnorm(n = n_all, mean = D * X1 + (1 - D) * X2, sd = 1)
+
+
+# Create a data frame
+df <- data.frame(
+  Y = Y,
+  Y_proxy_1 = Y_proxy_1,
+  D = D,
+  X1 = X1,
+  X2 = X2,
+  is_labeled = c(rep(1, n_ell), rep(0, n_u))
+) |> 
+  dplyr::mutate(Y = dplyr::if_else(is_labeled == 1, Y, NA_real_))
+```
+
+## Prepare Analysis Functions 
+
+We are interested in estimating the impact of $D$ on the true outcome $Y$.
+The main model is therefore regress $Y$ on $D$ and other covariates:
+$$
+Y_{i} = \alpha + \beta D_{i} + \gamma_{1}X_{i1} + \gamma_{2}X_{i2} + \epsilon_{i}
+$$
+where $\beta$ is the parameter of interest.
+
+We specify the analysis function for the main model: `fn_true_lm`.
+The analysis function must take the data frame as an input
+and return the quantity of interest (in this case the coefficient in front of $D$.)
+
+```{r analysis_fnc}
+# Estimating the linear regression coefficient
+# Main analysis is to regress the labeled outcome on treatment and covariates
+fn_true_lm <- function (df) {
+  fit <- lm(Y ~ D + X1 + X2, data = df)
+  fit$coefficients["D"]
+}
+```
+
+
+The Prediction-error robust inference (PERI) allows us to leverage additional
+proxy outcomes in improving the analysis based on the true outcome.
+
+We specify the proxy model, which regresses the proxy outcome $Y_{\text{prox}}$
+on $D$ and other covariates:
+$$
+Y_{\text{prox},i} = \eta_{0} + \eta_{1}D_{i} + \eta_{2}X_{i1} + \eta_{3}X_{i2} + 
+\varepsilon_{i}
+$$
+
+The analysis function for the proxy model takes the identical structure:
+the function takes a data frame as an argument and returns coefficients.
+In the proxy model function, a vector valued return is allowed.
+
+```{r proxy_model}
+# Proxy model is to regress proxy variables on the same set of variables as the
+# main model.  We use both proxy variables.
+fn_proxy_lm <- function(df) {
+  fit1 <- lm(Y_proxy_1 ~ D + X1 + X2, data = df)
+  fit1$coef
+}
+```
+
+
+## Apply Prediction-error Robust Inference
+
+We apply the PERI method by calling `peri()` function:
+
+```{r peri_fit}
+## With a model for Y_proxy_1
+fit_lm <- peri(
+  main_model = fn_true_lm,
+  proxy_model = fn_proxy_lm,
+  data = df,
+  labeled_set_var_name = "is_labeled",
+  options = SetOptions(
+    n_boot = 500,
+    use_full = TRUE,
+    use_parallel = TRUE
+  )
+)
+```
+
+In the `peri()` call, we can specify various options via the `SetOptions()`
+function. For example, `n_boot` controls the number of bootstrap iterations.
+We recommend setting the value low for a development phase and increase the 
+number once you want to get accurate estimates.
+
+
+
+Once the estimation is complete, we can view the summary of estimates:
+
+```{r peri_fit_summary}
+summary(fit_lm)
+```
+
+A quick way to obtain estimates is to call `get_estimates()` function:
+
+```{r get_estimates_call}
+get_estimates(fit_lm)
+```
+
+
+## Combine Multiple Proxy Variables
+
+When multiple proxy variables are available (for example multiple responses from
+a LLM is available), we can combine estimates together.
+
+
+As an illustration, we simulate a second proxy variable using a different 
+measurement error mechanism. In addition, we specify another analysis function
+for the second proxy variable
+```{r generate_second_proxy}
+# Simulate the second proxy for an illustration
+df$Y_proxy_2 <- round(Y / 4) * 4 + rnorm(n = n_all, mean = 0, sd = 0.5)
+
+# Define the second analysis function for the proxy outcome
+fn_proxy_lm_2 <- function(df) {
+  fit1 <- lm(Y_proxy_2 ~ D + X1 + X2, data = df)
+  fit1$coef
+}
+
+# Define a "meta" analysis function that runs two analysis function for the 
+# proxy outcomes.
+fn_proxy_lm_run <- function(df) {
+  fit1 <- fn_proxy_lm(df)
+  fit2 <- fn_proxy_lm_2(df)
+  c(fit1, fit2)
+}
+```
+
+
+Now, we can call `peri()`.
+
+```{r}
+fit_lm_2 <- peri(
+  main_model = fn_true_lm,
+  proxy_model = fn_proxy_lm_run,
+  data = df,
+  labeled_set_var_name = "is_labeled",
+  options = SetOptions(
+    n_boot = 500,
+    use_full = TRUE,
+    use_parallel = TRUE
+  )
+)
+
+summary(fit_lm_2)
+```
