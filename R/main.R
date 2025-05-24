@@ -1,6 +1,5 @@
 # To be renamed after the package name is finalized
 
-
 #' @title Proposed estimator
 #' 
 #' @param main_model A function that estimates the target parameter with the 
