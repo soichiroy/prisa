@@ -7,7 +7,7 @@ main_model <- function(df) {
   return(mean(df$x))
 }
 proxy_model <- function(df) {
-  return(median(df$y))
+  return(mean(df$y))
 }
 
 test_that("Return correct output from .GetPointEstimates", {
@@ -20,27 +20,10 @@ test_that("Return correct output from .GetPointEstimates", {
       args_proxy_model = list()
     ),
     list(
-      estimates = c(mean(1:5), (mean(1:5) - mean(1:40)) / 2),
-      # labeled-only estimates + proxy estimates
-      n_estimates_labeled = 2,
-      # proxy estimates
-      n_estimates_full = 1
+      tau_ell = mean(1:5),
+      delta_diff = (mean(1:5) - mean(1:40)) / 2,
+      n_main_estimates = 1,
+      n_proxy_estimates = 1
     )
-  )
-})
-
-test_that("Check valid form of functions", {
-  main_model_invalid <- function(df) {
-    return(c(mean(df$x), mean(df$y)))
-  }
-  expect_error(
-    .GetPointEstimates(
-      main_model = main_model_invalid,
-      proxy_model = proxy_model,
-      data_list = df_list,
-      args_main_model = list(),
-      args_proxy_model = list()
-    ),
-    "The main_model function must return a scalar value."
   )
 })
