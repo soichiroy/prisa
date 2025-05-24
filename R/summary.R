@@ -22,7 +22,7 @@ summary.peri <- function(object, ...) {
 #' @param x An object of class "summary.peri" returned by the summary.peri
 #'  function.
 #' @param ... Additional arguments.
-#' @importFrom cli cli_h1 cli_h2
+#' @importFrom cli cli_h1 cli_h2 cli_h3
 #' @export
 print.summary.peri <- function(x, digits = 4, ...) {
   cli::cli_h1("Prediction-error Robust Inference (peri) Results")
@@ -35,13 +35,11 @@ print.summary.peri <- function(x, digits = 4, ...) {
 
   # Show additional information
   cli::cli_h2("Additional Information")
-  cli::cli_h3("Efficiency Gain from PERI")
   .PrintEfficiencyGain(
     estimates = x$estimates,
     data_list = x$data_list
   )
 
-  cli::cli_h3("Data")
   .PrintDataInfo(x$data_list)
 
   cli::cli_h3("Labeled Only Estimates")
@@ -53,13 +51,14 @@ print.summary.peri <- function(x, digits = 4, ...) {
 }
 
 #' @title Prepare data information for printing
-#' @importFrom cli cli_ul
-#' @noRd 
+#' @importFrom cli cli_h3 cli_ul
+#' @noRd
 .PrintDataInfo <- function(data_list) {
   n_ell <- data_list$n_ell
   n_full <- data_list$n_full
   prop <- round(data_list$prop, 4)
 
+  cli::cli_h3("Data")
   cli::cli_ul(c(
     "n_labeled_data: {n_ell}",
     "n_full_data: {n_full}",
@@ -68,12 +67,16 @@ print.summary.peri <- function(x, digits = 4, ...) {
   invisible(data_list)
 }
 
+#' @title Print efficiency gain from PERI
+#' @importFrom cli cli_h3 cli_ul
+#' @noRd
 .PrintEfficiencyGain <- function(estimates, data_list) {
   std_err_reduction <- estimates$main$std_err / estimates$labeled_only$std_err 
   std_err_reduction <- round(100 * (std_err_reduction - 1))
   elss <- estimates$main$elss
   n_ell <- data_list$n_ell
 
+  cli::cli_h3("Efficiency Gain from PERI")
   cli::cli_ul(c(
     "Effective Labeled Sample Size (ELSS): {round(elss, 3)}",
     "Contribution from unlabeled set: {round(elss - n_ell, 1)}",
