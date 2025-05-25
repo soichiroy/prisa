@@ -1,6 +1,6 @@
 Package: peri 
 Title: Prediction-error Robust Inference for Statistical Analysis 
-Version: 0.0.0.9000
+Version: 0.0.1
 Authors@R: 
     c(
         person("Soichiro", "Yamauchi", email = "soichiro@alumni.princeton.edu", role = c("aut", "cre"),
