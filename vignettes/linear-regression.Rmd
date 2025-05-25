@@ -124,7 +124,7 @@ fit_lm <- peri(
   options = SetOptions(
     n_boot = 500,
     use_full = TRUE,
-    use_parallel = TRUE
+    use_parallel = FALSE
   )
 )
 ```
@@ -187,9 +187,11 @@ fit_lm_2 <- peri(
   data = df,
   labeled_set_var_name = "is_labeled",
   options = SetOptions(
-    n_boot = 500,
+    # Please increase bootstrap iterations in real use
+    n_boot = 500,         
+    # Turn off parallel computing to suppress CRAN warnings
+    use_parallel = FALSE,
     use_full = TRUE,
-    use_parallel = TRUE
   )
 )
 

@@ -10,6 +10,8 @@
 \item{x}{An object of class "summary.peri" returned by the summary.peri
 function.}
 
+\item{digits}{The number of significant digits to print. Default is 4.}
+
 \item{...}{Additional arguments.}
 }
 \description{

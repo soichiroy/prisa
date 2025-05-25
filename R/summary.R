@@ -21,6 +21,7 @@ summary.peri <- function(object, ...) {
 #'
 #' @param x An object of class "summary.peri" returned by the summary.peri
 #'  function.
+#' @param digits The number of significant digits to print. Default is 4.
 #' @param ... Additional arguments.
 #' @importFrom cli cli_h1 cli_h2 cli_h3
 #' @export
@@ -101,6 +102,7 @@ print.summary.peri <- function(x, digits = 4, ...) {
 #' @export
 #' @importFrom dplyr mutate bind_rows select everything
 #' @importFrom tibble as_tibble rownames_to_column
+#' @importFrom rlang .data
 get_estimates <- function(x) {
   if (!inherits(x, "peri")) {
     stop("The object must be of class 'peri'.")
@@ -115,6 +117,6 @@ get_estimates <- function(x) {
     mutate(df_main, estimator = "peri"),
     mutate(df_labeled_only, estimator = "labeled_only")
   ) %>%
-    select(variable, estimator, everything())
+    select(.data$variable, .data$estimator, everything())
   as_tibble(out)
 }
