@@ -2,15 +2,19 @@
 % Please edit documentation in R/accuracy.R
 \name{accuracy}
 \alias{accuracy}
-\title{Compute ell-value, u-value, and h-value}
+\title{Conduct accuracy analysis}
 \usage{
 accuracy(result, zeta = seq(from = 0.05, to = 0.8, by = 0.05))
 }
 \arguments{
-\item{result}{an object of class “MLcovar”, usually, a result of a call to \code{\link{MLcovar}}.}
+\item{result}{an object of class “peri”, usually, a result of a call to
+\code{\link{peri}}.}
 
-\item{zeta}{A vector of variance reduction factor (\link{0, 1}).
-Default is between 0.05 and 0.8.}
+\item{zeta}{A vector of variance reduction factor ([0, 1)).
+Default is between 0.05 and 0.8. A particular value of zeta means that we
+want to reduce the variance to zeta * 100\%, that is, the variance will be
+multiplied by (1 - zeta). For example, if we want to reduce the variance by
+20\%, we set zeta = 0.2. A larger value of zeta requires more observations.}
 }
 \description{
 Compute ell-value, u-value, and h-value
@@ -41,7 +45,7 @@ df_test <- data.frame(
 # Prepare functions for the analysis
 fn_main <- function(df) {
   fit <- lm(Y ~ X, data = df)
-  fit$coef[2]
+  fit$coef
 }
 
 fn_proxy_1 <- function(df) {
@@ -50,7 +54,7 @@ fn_proxy_1 <- function(df) {
 }
 
 # Run functions
-fit_1 <- MLcovar(
+fit_1 <- peri(
   main_model = fn_main,
   proxy_model = fn_proxy_1,
   data = df_test,
@@ -60,5 +64,6 @@ fit_1 <- MLcovar(
 summary(fit_1)
 
 accuracy_out <- accuracy(fit_1)
-plot(accuracy_out)
+accuracy_plot <- plot(accuracy_out)
+accuracy_plot[["X"]]
 }

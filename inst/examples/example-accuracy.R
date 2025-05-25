@@ -23,7 +23,7 @@ df_test <- data.frame(
 # Prepare functions for the analysis
 fn_main <- function(df) {
   fit <- lm(Y ~ X, data = df)
-  fit$coef[2]
+  fit$coef
 }
 
 fn_proxy_1 <- function(df) {
@@ -32,7 +32,7 @@ fn_proxy_1 <- function(df) {
 }
 
 # Run functions
-fit_1 <- MLcovar(
+fit_1 <- peri(
   main_model = fn_main,
   proxy_model = fn_proxy_1,
   data = df_test,
@@ -42,4 +42,5 @@ fit_1 <- MLcovar(
 summary(fit_1)
 
 accuracy_out <- accuracy(fit_1)
-plot(accuracy_out)
+accuracy_plot <- plot(accuracy_out)
+accuracy_plot[["X"]]

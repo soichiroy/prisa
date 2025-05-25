@@ -1,9 +1,15 @@
-#' Compute ell-value, u-value, and h-value
+#' Conduct accuracy analysis
 #'
-#' @param result an object of class “MLcovar”, usually, a result of a call to \code{\link{MLcovar}}.
-#' @param zeta A vector of variance reduction factor ([0, 1]).
-#'   Default is between 0.05 and 0.8.
+#' @description Compute ell-value, u-value, and h-value
+#' @param result an object of class “peri”, usually, a result of a call to
+#'   \code{\link{peri}}.
+#' @param zeta A vector of variance reduction factor ([0, 1)).
+#'   Default is between 0.05 and 0.8. A particular value of zeta means that we 
+#'   want to reduce the variance to zeta * 100%, that is, the variance will be 
+#'   multiplied by (1 - zeta). For example, if we want to reduce the variance by
+#'   20%, we set zeta = 0.2. A larger value of zeta requires more observations. 
 #' @example inst/examples/example-accuracy.R
+#' @importFrom purrr map
 #' @export
 accuracy <- function(
   result,
@@ -12,31 +18,38 @@ accuracy <- function(
   zeta <- as.vector(zeta)
   n_ell <- result$data_list$n_ell
   n <- result$data_list$n_full - n_ell
-  elss <- result$additional_info$var_estimates$elss
   prop <- result$data_list$prop
+  elss <- result$additional_info$var_estimates$elss
+  output <- purrr::map(elss, \(x) .GetAllValues(zeta, n_ell, n, x, prop))
+
+  class(output) <- c(class(output), "accuracy")
+  output
+}
+
+#' Compute all metrics
+#' @noRd 
+.GetAllValues <- function(zeta, n_ell, n, elss, prop) {
   R_sq <- (1 - n_ell / elss) / (1 - prop)
   elss_new <- elss / (1 - zeta)
   ellvalue <- .ellvalue(zeta, n_ell, n, elss, prop, R_sq)
   uvalue <- .uvalue(zeta, n_ell, n, elss, prop, R_sq)
   hvalue <- .hvalue(zeta, n_ell, n, elss, prop, R_sq)
 
-  elluhvalues <- data.frame(
+  all_values <- data.frame(
     zeta = zeta,
     elss = elss_new,
     ellvalue = ellvalue,
     uvalue = uvalue,
     hvalue = hvalue
   )
-  output <- list(
-    result = elluhvalues,
+  
+  list(
+    result = all_values,
     n = n,
     n_ell = n_ell,
     elss = elss,
-    r_sq = R_sq
+    r_sq = R_sq 
   )
-
-  class(output) <- c(class(output), "accuracy")
-  output
 }
 
 #' Compute ell-value
