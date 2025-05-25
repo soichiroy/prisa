@@ -20,7 +20,7 @@ accuracy <- function(
   n <- result$data_list$n_full - n_ell
   prop <- result$data_list$prop
   elss <- result$additional_info$var_estimates$elss
-  output <- purrr::map(elss, \(x) .GetAllValues(zeta, n_ell, n, x, prop))
+  output <- purrr::map(elss, \(x) GetAllValues(zeta, n_ell, n, x, prop))
 
   class(output) <- c(class(output), "accuracy")
   output
