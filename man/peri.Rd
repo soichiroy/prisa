@@ -9,7 +9,8 @@ peri(
   proxy_model,
   data,
   labeled_set_var_name,
-  options = SetOptions(),
+  options = SetOptions(n_boot = 500, use_full = TRUE, use_parallel = TRUE, n_cores =
+    parallel::detectCores() - 1, cluster_var_name = NULL),
   args_main_model = list(),
   args_proxy_model = list()
 )
@@ -73,7 +74,12 @@ fit <- peri(
   main_model = fn_true,
   proxy_model = fn_proxy,
   data = df,
-  labeled_set_var_name = "is_labeled"
+  labeled_set_var_name = "is_labeled",
+  options = SetOptions(
+    n_boot = 100, 
+    use_full = TRUE,
+    use_parallel = FALSE
+  )
 )
 
 summary(fit)

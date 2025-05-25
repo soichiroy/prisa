@@ -33,7 +33,13 @@ peri <- function(
   proxy_model,
   data,
   labeled_set_var_name,
-  options = SetOptions(),
+  options = SetOptions(
+    n_boot = 500,
+    use_full = TRUE,
+    use_parallel = TRUE,
+    n_cores = parallel::detectCores() - 1,
+    cluster_var_name = NULL
+  ),
   args_main_model = list(),
   args_proxy_model = list()
 ) {
@@ -78,7 +84,7 @@ peri <- function(
   )
 
   # Naive bootstrap implementation
-  cov_estimates <- .RunBootstrap(
+  bootstrap_estimates <- .RunBootstrap(
     main_model,
     proxy_model,
     data_list,
@@ -88,22 +94,33 @@ peri <- function(
     args_proxy_model
   )
 
+  cov_estimates <- .ProcessCovarianceEstimates(
+    bootstrap_estimates,
+    point_estimate$n_main_estimates,
+    options$use_full
+  )
+
   # Estimate optimal coefficients
   coef_estimates <- .EstimateOptimalCoefficients(cov_estimates)
 
   # Estimate the variance
   var_estimates <- .EstimateVariance(
-    cov_estimates, coef_estimates, data_list$prop, data_list$n_ell, options
+    cov_estimates,
+    coef_estimates,
+    data_list$prop,
+    data_list$n_ell,
+    options
   )
 
   # Combine estimates
-  main_estimate <- .CombineEstimates(point_estimate$estimates, coef_estimates)
+  main_estimate <- .CombineEstimates(point_estimate, coef_estimates)
 
   # Prepare output
   output <- .FormatOutput(
     main_estimate,
-    point_estimate$estimates,
+    point_estimate,
     coef_estimates,
+    bootstrap_estimates,
     cov_estimates,
     var_estimates,
     data_list,
@@ -219,6 +236,7 @@ SetOptions <- function(
     main_estimate,
     point_estimate,
     coef_estimates,
+    bootstrap_estimates,
     cov_estimates,
     var_estimates,
     data_list,
@@ -228,7 +246,7 @@ SetOptions <- function(
   std_error <- sqrt(var_estimates$var)
 
   # Standard error of the labeled-only estimator
-  se_labeled_only <- sqrt(cov_estimates$vcov_labeled[1, 1])
+  se_labeled_only <- sqrt(var_estimates$var_labeled_only)
 
   # Main information
   main_df <- data.frame(
@@ -240,10 +258,12 @@ SetOptions <- function(
   )
 
   label_only_df <- data.frame(
-    estimate = point_estimate[1],
+    estimate = point_estimate$tau_ell,
     std_err = se_labeled_only,
-    ci_lower_95 = point_estimate[1] - qnorm(1 - 0.05 / 2) * se_labeled_only,
-    ci_upper_95 = point_estimate[1] + qnorm(1 - 0.05 / 2) * se_labeled_only
+    ci_lower_95 = point_estimate$tau_ell - qnorm(1 - 0.05 / 2) * se_labeled_only,
+    ci_upper_95 = point_estimate$tau_ell + qnorm(1 - 0.05 / 2) * se_labeled_only,
+    # Add the true sample size for the labeled only estimator
+    elss = data_list$n_ell 
   )
 
   # Other information necessary for the follow-up analysis
@@ -251,6 +271,7 @@ SetOptions <- function(
     point_estimate = point_estimate,
     coef_estimates = coef_estimates,
     cov_estimates = cov_estimates,
+    bootstrap_estimates = bootstrap_estimates,
     var_estimates = var_estimates
   )
   

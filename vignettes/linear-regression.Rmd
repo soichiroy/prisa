@@ -71,16 +71,19 @@ where $\beta$ is the parameter of interest.
 
 We specify the analysis function for the main model: `fn_true_lm`.
 The analysis function must take the data frame as an input
-and return the quantity of interest (in this case the coefficient in front of $D$.)
+and return the quantity of interest with other coefficient estimates. 
 
 ```{r analysis_fnc}
 # Estimating the linear regression coefficient
 # Main analysis is to regress the labeled outcome on treatment and covariates
 fn_true_lm <- function (df) {
   fit <- lm(Y ~ D + X1 + X2, data = df)
-  fit$coefficients["D"]
+  return(fit$coef)
 }
 ```
+
+When the number of coefficients is large (e.g., many fixed effects), we recommend
+selectively returning parameters that are of direct interest.
 
 
 The Prediction-error robust inference (PERI) allows us to leverage additional
@@ -102,7 +105,7 @@ In the proxy model function, a vector valued return is allowed.
 # main model.  We use both proxy variables.
 fn_proxy_lm <- function(df) {
   fit1 <- lm(Y_proxy_1 ~ D + X1 + X2, data = df)
-  fit1$coef
+  return(fit1$coef)
 }
 ```
 
@@ -121,7 +124,7 @@ fit_lm <- peri(
   options = SetOptions(
     n_boot = 500,
     use_full = TRUE,
-    use_parallel = TRUE
+    use_parallel = FALSE
   )
 )
 ```
@@ -184,9 +187,11 @@ fit_lm_2 <- peri(
   data = df,
   labeled_set_var_name = "is_labeled",
   options = SetOptions(
-    n_boot = 500,
+    # Please increase bootstrap iterations in real use
+    n_boot = 500,         
+    # Turn off parallel computing to suppress CRAN warnings
+    use_parallel = FALSE,
     use_full = TRUE,
-    use_parallel = TRUE
   )
 )
 
