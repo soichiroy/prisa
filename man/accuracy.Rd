@@ -64,6 +64,11 @@ fit_1 <- peri(
 summary(fit_1)
 
 accuracy_out <- accuracy(fit_1)
+
+# View the summary of the accuracy output
+summary(accuracy_out, nrows = 5)
+
+# Plot the output from the accuracy analysis 
 accuracy_plot <- plot(accuracy_out)
 accuracy_plot[["X"]]
 }
