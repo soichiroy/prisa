@@ -29,7 +29,9 @@ Imports:
     doRNG,
     dplyr,
     foreach,
+    ggplot2,
     magrittr,
+    purrr,
     rlang,
     tibble,
     tidyr
