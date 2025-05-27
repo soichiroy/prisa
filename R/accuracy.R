@@ -20,7 +20,7 @@ accuracy <- function(
   n <- result$data_list$n_full - n_ell
   prop <- result$data_list$prop
   elss <- result$additional_info$var_estimates$elss
-  output <- purrr::map(elss, \(x) GetAllValues(zeta, n_ell, n, x, prop))
+  output <- purrr::map(elss, \(x) .GetAllValues(zeta, n_ell, n, x, prop))
 
   class(output) <- c(class(output), "accuracy")
   output
@@ -78,4 +78,41 @@ accuracy <- function(
   hvalue <- zeta * (1 - (1 - prop) * R_sq) / (1 - prop)
   hvalue[zeta > (1 - elss / n)] <- NA
   hvalue
+}
+
+#' Summary for accuracy analysis
+#'
+#' @param object An object of class "accuracy" returned by accuracy().
+#' @param digits Number of significant digits to print. Default is 4.
+#' @param ... Additional arguments (ignored).
+#' @export
+summary.accuracy <- function(object, digits = 4, nrows = 10, ...) {
+  cat("\nAccuracy Analysis Summary\n")
+  cat(strrep("-", 30), "\n")
+  cat("Columns:\n")
+  cat("  zeta: Variance reduction factor\n")
+  cat("  elss: Effective labeled sample size\n")
+  cat("  ellvalue: \u2113-value (labeled sample size needed for target variance reduction)\n")
+  cat("  uvalue: u-value (unlabeled sample size needed for target variance reduction)\n")
+  cat("  hvalue: h-value\n")
+  cat(strrep("-", 30), "\n")
+  for (i in seq_along(object)) {
+    res <- object[[i]]$result
+    var_name <- names(object)[i]
+    if (is.null(var_name) || var_name == "") var_name <- paste0("Variable ", i)
+    cat("\nVariable:", var_name, "\n")
+    print(
+      utils::head(
+        format(
+          res,
+          digits = digits,
+          nsmall = 2
+        ),
+        n = min(nrows, nrow(res))
+      ),
+      row.names = FALSE
+    )
+    cat("... (showing first", nrows, "rows)\n")
+  }
+  invisible(object)
 }

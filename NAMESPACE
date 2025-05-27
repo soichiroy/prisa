@@ -2,6 +2,7 @@
 
 S3method(plot,accuracy)
 S3method(print,summary.peri)
+S3method(summary,accuracy)
 S3method(summary,peri)
 export(SetOptions)
 export(accuracy)
