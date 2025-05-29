@@ -67,7 +67,7 @@
   # unlist main and proxy estimates and compute the covariance
   vcov_labeled <- cov(boot_estimate_labeled)
 
-  # Exit the function if boot_full is FALSE (skip the bootstrap for the entire
+  # Exit the function if use_full is FALSE (skip the bootstrap for the entire
   # data).
   if (isFALSE(use_full)) {
     # Return vcov estimate

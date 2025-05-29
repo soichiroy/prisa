@@ -13,8 +13,9 @@
     use_label_only = FALSE) {
 
   # Unbiased estimator
-  tau_ell <-
-    do.call(main_model, c(list(data_list$dat_labeled), args_main_model))
+  tau_ell <- do.call(
+    main_model, c(list(data_list$dat_labeled), args_main_model)
+  )
 
   # Biased estimators
   delta_ell <- do.call(
@@ -39,6 +40,15 @@
   delta_full <- do.call(
     proxy_model, c(list(data_list$dat_full), args_proxy_model)
   )
+
+  if (length(delta_full) != n_proxy_estimates) {
+    stop(
+      "The length of the output from proxy_model must be same when evaluated on
+       the labeled and full data.  Different lengths could happen for example 
+       when estimates include fixed effects. Consider limiting the output from 
+       proxy_model to main parameters of interest."
+    )
+  }
 
   # Create control variate estimators
   delta_diff <- as.vector(delta_ell) - as.vector(delta_full)
