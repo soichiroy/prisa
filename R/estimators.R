@@ -131,7 +131,10 @@
   var_theoretical_limit <- prop * var_tau_ell
   if (any(var_est < var_theoretical_limit) && !options$debug_mode) {
     stop(
-      "Failed variance estimation. Please use use_full = TRUE option instead."
+      "Failed variance estimation. It is possible that the number of observations
+       in the labeled data is too small. Please rerun with use_full = TRUE option,
+       or increase the number of bootstrap iterations by increasing n_boot.
+       See SetOptions for more details."
     )
   }
 
