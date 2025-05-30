@@ -13,14 +13,10 @@
     use_label_only = FALSE) {
 
   # Unbiased estimator
-  tau_ell <- do.call(
-    main_model, c(list(data_list$dat_labeled), args_main_model)
-  )
+  tau_ell <- .FitModel(main_model, data_list$dat_labeled, args_main_model)
 
   # Biased estimators
-  delta_ell <- do.call(
-    proxy_model, c(list(data_list$dat_labeled), args_proxy_model)
-  )
+  delta_ell <- .FitModel(proxy_model, data_list$dat_labeled, args_proxy_model)
 
   n_main_estimates <- length(tau_ell)
   n_proxy_estimates <- length(delta_ell)
@@ -37,15 +33,13 @@
   }
 
   # Proxy estimators on the full data
-  delta_full <- do.call(
-    proxy_model, c(list(data_list$dat_full), args_proxy_model)
-  )
+  delta_full <- .FitModel(proxy_model, data_list$dat_full, args_proxy_model)
 
   if (length(delta_full) != n_proxy_estimates) {
     stop(
       "The length of the output from proxy_model must be same when evaluated on
-       the labeled and full data.  Different lengths could happen for example 
-       when estimates include fixed effects. Consider limiting the output from 
+       the labeled and full data.  Different lengths could happen for example
+       when estimates include fixed effects. Consider limiting the output from
        proxy_model to main parameters of interest."
     )
   }
@@ -62,6 +56,23 @@
   )
 
   return(estimates)
+}
+
+#' Fit a model using the provided function and arguments
+#' 
+#' @noRd
+.FitModel <- function(model_function, data, args) {
+  # Fit the model using the provided function and arguments
+  model_fit <- do.call(model_function, c(list(data), args))
+  
+  # Check if the model fit is numeric and has the expected length
+  if (
+    !is.numeric(model_fit) || (!is.vector(model_fit) && length(model_fit) != 1)
+  ) {
+    stop("main_model and proxy_model functions must return a numeric scalar or vector.")
+  }
+
+  return(model_fit)
 }
 
 #' Estimate optimal coefficients
