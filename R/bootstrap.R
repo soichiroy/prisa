@@ -112,9 +112,7 @@
   boot_estimates <- list(
     vcov_labeled = vcov_labeled,
     vcov_full = vcov_full,
-    vcov_main_diff = vcov_main_diff,
-    n_main_estimates = n_main_estimates,
-    n_proxy_estimates = n_proxy_estimates
+    vcov_main_diff = vcov_main_diff
   )
   return(.ProcessCovarianceEstimates(
     boot_estimates,
