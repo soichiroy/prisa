@@ -65,7 +65,7 @@
     }
 
   # unlist main and proxy estimates and compute the covariance
-  vcov_labeled <- cov(boot_estimate_labeled)
+  vcov_labeled <- cov(boot_estimate_labeled, use = "complete.obs")
 
   # Exit the function if use_full is FALSE (skip the bootstrap for the entire
   # data).
@@ -90,18 +90,18 @@
     .combine = rbind,
     .inorder = FALSE,
     .packages = c("dplyr"),
-    .export = c(".ResampleDataFrame")
+    .export = c(".ResampleDataFrame", ".FitModel")
   ) %dopar%
     {
       data_main_resampled <- .ResampleDataFrame(data_main, var_cluster)
-      do.call(proxy_model, c(list(data_main_resampled), args_proxy_model))
+      .FitModel(proxy_model, data_main_resampled, args_proxy_model)
     }
 
   # VCOV(delta_ell - delta_full)
   idx_delta_ell <- (n_main_estimates + 1):(n_main_estimates + n_proxy_estimates)
   delta_ell <- boot_estimate_labeled[, idx_delta_ell, drop = FALSE]
   boot_estimate_diff <- delta_ell - boot_estimate_full
-  vcov_full <- cov(boot_estimate_diff)
+  vcov_full <- cov(boot_estimate_diff, use = "complete.obs")
 
   # Cov(tau_main_ell, delta_ell - delta_full)
   vcov_main_diff <- cov(
@@ -179,7 +179,7 @@
 #'  If NULL, the function will perform simple random sampling.``
 #' @return A resampled data frame.
 #' @noRd
-#' @importFrom dplyr slice_sample across all_of
+#' @importFrom dplyr slice_sample across all_of ungroup group_by
 #' @importFrom tidyr nest unnest
 .ResampleDataFrame <- function(df, cluster_var) {
   if (is.null(cluster_var)) {
@@ -201,14 +201,14 @@
 
 #' Setup parallel backend for bootstrap
 #'
-#' @importFrom doRNG registerDoRNG
-#' @importFrom foreach registerDoSEQ
-#' @importFrom parallel makeCluster stopCluster
-#' @importFrom doParallel registerDoParallel
 #' @param use_parallel A logical value indicating whether to use parallel
 #'   processing.
 #' @param n_cores The number of cores to be used for parallel processing.
 #' @param seed_value The seed value for the random number generator.
+#' @importFrom doRNG registerDoRNG
+#' @importFrom foreach registerDoSEQ
+#' @importFrom parallel makeCluster stopCluster
+#' @importFrom doParallel registerDoParallel
 #' @noRd
 .SetupParallelBackend <- function(use_parallel, n_cores, seed_value) {
   if (use_parallel) {
