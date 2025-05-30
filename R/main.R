@@ -3,13 +3,14 @@
 #' @param main_model A function that estimates the target parameter with the 
 #'   labeled data. The function takes the data as the first argument and 
 #'   returns the estimate of the target parameter. The target parameter must 
-#'   be a scalar. The additional arguments to the main_model function must be 
-#'   provided in the args_main_model argument.
-#' @param proxy_model A function that estimates the target parameter with the 
-#'   proxy variables. The function takes the data as the first argument and 
-#'   returns the estimate of the target parameter. The target parameter must 
-#'   be a scalar or a vector. The additional arguments to the proxy_model 
-#'   function must be provided in the args_proxy_model argument.
+#'   be a scalar or vector. The additional arguments to the main_model function
+#'   must be provided in the args_main_model argument.
+#' @param proxy_model A function that estimates the target parameter with the
+#'   proxy variables. The function takes the data as the first argument and
+#'   returns the estimate of the target parameter. The target parameter must
+#'   be a scalar or a vector. The number of returned elements should be same
+#'   when evaluated on the labeled and full data. The additional arguments to
+#'   the proxy_model function must be provided in the args_proxy_model argument.
 #' @param data A data frame that contains the labeled and unlabeled data. The 
 #'   rows that contains the labeled data must be indicated by a variable in 
 #'   the data frame. The variable name must be provided in the 
