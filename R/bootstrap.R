@@ -71,12 +71,11 @@
   # data).
   if (isFALSE(use_full)) {
     # Return vcov estimate
-    return(list(
-      vcov_labeled = vcov_labeled,
-      vcov_full = NULL,
-      vcov_main_diff = NULL,
+    boot_estimates <- list(vcov_labeled = vcov_labeled)
+    return(.ProcessCovarianceEstimates(
+      boot_estimates,
       n_main_estimates = n_main_estimates,
-      n_proxy_estimates = n_proxy_estimates
+      use_full = use_full
     ))
   }
 
@@ -110,18 +109,23 @@
   )
 
   # Return bootstrapped variance-covariance estimates
-  list(
+  boot_estimates <- list(
     vcov_labeled = vcov_labeled,
     vcov_full = vcov_full,
     vcov_main_diff = vcov_main_diff,
     n_main_estimates = n_main_estimates,
     n_proxy_estimates = n_proxy_estimates
   )
+  return(.ProcessCovarianceEstimates(
+    boot_estimates,
+    n_main_estimates = n_main_estimates,
+    use_full = use_full
+  ))
 }
 
 #' Process the bootstrap-based variance-covariance estimates
 #'
-#' @param cov_estimates An output of the function \code{\link{.RunBootstrap}}.
+#' @param cov_estimates A list of bootstrap outputs.
 #' @param n_main_estimates The number of main estimates.
 #' @param use_full Boolean. Passed from the SetOptions function.
 #' @noRd

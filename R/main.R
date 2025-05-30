@@ -86,7 +86,7 @@ peri <- function(
   )
 
   # Naive bootstrap implementation
-  bootstrap_estimates <- .RunBootstrap(
+  cov_estimates <- .RunBootstrap(
     main_model,
     proxy_model,
     data_list,
@@ -94,12 +94,6 @@ peri <- function(
     options,
     args_main_model,
     args_proxy_model
-  )
-
-  cov_estimates <- .ProcessCovarianceEstimates(
-    bootstrap_estimates,
-    point_estimate$n_main_estimates,
-    options$use_full
   )
 
   # Estimate optimal coefficients
@@ -118,19 +112,17 @@ peri <- function(
   main_estimate <- .CombineEstimates(point_estimate, coef_estimates)
 
   # Prepare output
-  output <- .FormatOutput(
-    main_estimate,
-    point_estimate,
-    coef_estimates,
-    bootstrap_estimates,
-    cov_estimates,
-    var_estimates,
-    data_list,
-    options
+  return(
+    .FormatOutput(
+      main_estimate,
+      point_estimate,
+      coef_estimates,
+      cov_estimates,
+      var_estimates,
+      data_list,
+      options
+    )
   )
-
-  class(output) <- c(class(output), "peri")
-  output
 }
 
 
@@ -212,12 +204,14 @@ SetOptions <- function(
   }
   # Check if labeled_set_var_name is binary (0 or 1)
   if (!all(data[[labeled_set_var_name]] %in% c(0, 1))) {
-    stop("The labeled_set_var_name variable must be binary (0 or 1).")
+    stop(
+      "The labeled_set_var_name variable must be numeric and binary (0 or 1)."
+    )
   }
 
   # Split data into labeled and unlabeled sets
   dat_labeled <- dplyr::filter(data, !!sym(labeled_set_var_name) == 1)
-  unlabeled_set <- dplyr::filter(data, !!sym(labeled_set_var_name) == 0)
+  dat_unlabeled <- dplyr::filter(data, !!sym(labeled_set_var_name) == 0)
 
   n_ell <- nrow(dat_labeled)
   n_full <- nrow(data)
@@ -225,7 +219,7 @@ SetOptions <- function(
 
   list(
     dat_labeled = dat_labeled,
-    dat_unlabeled = unlabeled_set,
+    dat_unlabeled = dat_unlabeled,
     dat_full = data,
     n_ell = n_ell,
     n_full = n_full,
@@ -240,7 +234,6 @@ SetOptions <- function(
     main_estimate,
     point_estimate,
     coef_estimates,
-    bootstrap_estimates,
     cov_estimates,
     var_estimates,
     data_list,
@@ -275,14 +268,16 @@ SetOptions <- function(
     point_estimate = point_estimate,
     coef_estimates = coef_estimates,
     cov_estimates = cov_estimates,
-    bootstrap_estimates = bootstrap_estimates,
     var_estimates = var_estimates
   )
   
-  list(
+  output <- list(
     estimates = list(main = main_df, labeled_only = label_only_df),
     additional_info = output_quantities,
     data_list = data_list[c("n_ell", "n_full", "prop")],
     options = options
   )
+
+  class(output) <- c(class(output), "peri")
+  return(output)
 }
