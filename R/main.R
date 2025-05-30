@@ -3,13 +3,14 @@
 #' @param main_model A function that estimates the target parameter with the 
 #'   labeled data. The function takes the data as the first argument and 
 #'   returns the estimate of the target parameter. The target parameter must 
-#'   be a scalar. The additional arguments to the main_model function must be 
-#'   provided in the args_main_model argument.
-#' @param proxy_model A function that estimates the target parameter with the 
-#'   proxy variables. The function takes the data as the first argument and 
-#'   returns the estimate of the target parameter. The target parameter must 
-#'   be a scalar or a vector. The additional arguments to the proxy_model 
-#'   function must be provided in the args_proxy_model argument.
+#'   be a scalar or vector. The additional arguments to the main_model function
+#'   must be provided in the args_main_model argument.
+#' @param proxy_model A function that estimates the target parameter with the
+#'   proxy variables. The function takes the data as the first argument and
+#'   returns the estimate of the target parameter. The target parameter must
+#'   be a scalar or a vector. The number of returned elements should be same
+#'   when evaluated on the labeled and full data. The additional arguments to
+#'   the proxy_model function must be provided in the args_proxy_model argument.
 #' @param data A data frame that contains the labeled and unlabeled data. The 
 #'   rows that contains the labeled data must be indicated by a variable in 
 #'   the data frame. The variable name must be provided in the 
@@ -17,7 +18,8 @@
 #' @param labeled_set_var_name The name of the variable that indicates whether 
 #'   rows are labeled or not. The variable must be binary.
 #' @param options A list of options for the analysis. The values must be set 
-#'   by the [SetOptions()].
+#'   by the [SetOptions()]. Please see the documentation of [SetOptions()] for
+#'   more details on the accepted options.
 #' @param args_main_model A list of additional arguments to be passed to the 
 #'   main_model function. The list must be named.
 #' @param args_proxy_model A list of additional arguments to be passed to the 
@@ -33,7 +35,13 @@ peri <- function(
   proxy_model,
   data,
   labeled_set_var_name,
-  options = SetOptions(),
+  options = SetOptions(
+    n_boot = 500,
+    use_full = TRUE,
+    use_parallel = TRUE,
+    n_cores = parallel::detectCores() - 1,
+    cluster_var_name = NULL
+  ),
   args_main_model = list(),
   args_proxy_model = list()
 ) {
@@ -93,25 +101,28 @@ peri <- function(
 
   # Estimate the variance
   var_estimates <- .EstimateVariance(
-    cov_estimates, coef_estimates, data_list$prop, data_list$n_ell, options
-  )
-
-  # Combine estimates
-  main_estimate <- .CombineEstimates(point_estimate$estimates, coef_estimates)
-
-  # Prepare output
-  output <- .FormatOutput(
-    main_estimate,
-    point_estimate$estimates,
-    coef_estimates,
     cov_estimates,
-    var_estimates,
-    data_list,
+    coef_estimates,
+    data_list$prop,
+    data_list$n_ell,
     options
   )
 
-  class(output) <- c(class(output), "peri")
-  output
+  # Combine estimates
+  main_estimate <- .CombineEstimates(point_estimate, coef_estimates)
+
+  # Prepare output
+  return(
+    .FormatOutput(
+      main_estimate,
+      point_estimate,
+      coef_estimates,
+      cov_estimates,
+      var_estimates,
+      data_list,
+      options
+    )
+  )
 }
 
 
@@ -135,7 +146,9 @@ peri <- function(
 #' @param cluster_var_name The name of the variable that indicates the cluster. 
 #'   When provided, the cluster bootstrap will be used. Supports multi-way 
 #'   clustering by providing a vector of variable names (e.g., c("x", "y")).
-#' @param debug_mode A boolean value. If TRUE, the debug mode will be used. 
+#' @param debug_mode A boolean value. If TRUE, the debug mode will be used. The 
+#'   debug model is for development purposes only and is not recommended for
+#'   production use. Default is FALSE. 
 #' @return A named list of options.
 #' @seealso [peri()]
 #' @importFrom parallel detectCores
@@ -191,12 +204,14 @@ SetOptions <- function(
   }
   # Check if labeled_set_var_name is binary (0 or 1)
   if (!all(data[[labeled_set_var_name]] %in% c(0, 1))) {
-    stop("The labeled_set_var_name variable must be binary (0 or 1).")
+    stop(
+      "The labeled_set_var_name variable must be numeric and binary (0 or 1)."
+    )
   }
 
   # Split data into labeled and unlabeled sets
   dat_labeled <- dplyr::filter(data, !!sym(labeled_set_var_name) == 1)
-  unlabeled_set <- dplyr::filter(data, !!sym(labeled_set_var_name) == 0)
+  dat_unlabeled <- dplyr::filter(data, !!sym(labeled_set_var_name) == 0)
 
   n_ell <- nrow(dat_labeled)
   n_full <- nrow(data)
@@ -204,7 +219,7 @@ SetOptions <- function(
 
   list(
     dat_labeled = dat_labeled,
-    dat_unlabeled = unlabeled_set,
+    dat_unlabeled = dat_unlabeled,
     dat_full = data,
     n_ell = n_ell,
     n_full = n_full,
@@ -228,7 +243,7 @@ SetOptions <- function(
   std_error <- sqrt(var_estimates$var)
 
   # Standard error of the labeled-only estimator
-  se_labeled_only <- sqrt(cov_estimates$vcov_labeled[1, 1])
+  se_labeled_only <- sqrt(var_estimates$var_labeled_only)
 
   # Main information
   main_df <- data.frame(
@@ -240,10 +255,12 @@ SetOptions <- function(
   )
 
   label_only_df <- data.frame(
-    estimate = point_estimate[1],
+    estimate = point_estimate$tau_ell,
     std_err = se_labeled_only,
-    ci_lower_95 = point_estimate[1] - qnorm(1 - 0.05 / 2) * se_labeled_only,
-    ci_upper_95 = point_estimate[1] + qnorm(1 - 0.05 / 2) * se_labeled_only
+    ci_lower_95 = point_estimate$tau_ell - qnorm(1 - 0.05 / 2) * se_labeled_only,
+    ci_upper_95 = point_estimate$tau_ell + qnorm(1 - 0.05 / 2) * se_labeled_only,
+    # Add the true sample size for the labeled only estimator
+    elss = data_list$n_ell 
   )
 
   # Other information necessary for the follow-up analysis
@@ -254,10 +271,13 @@ SetOptions <- function(
     var_estimates = var_estimates
   )
   
-  list(
+  output <- list(
     estimates = list(main = main_df, labeled_only = label_only_df),
     additional_info = output_quantities,
     data_list = data_list[c("n_ell", "n_full", "prop")],
     options = options
   )
+
+  class(output) <- c(class(output), "peri")
+  return(output)
 }

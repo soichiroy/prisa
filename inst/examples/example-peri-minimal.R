@@ -23,7 +23,12 @@ fit <- peri(
   main_model = fn_true,
   proxy_model = fn_proxy,
   data = df,
-  labeled_set_var_name = "is_labeled"
+  labeled_set_var_name = "is_labeled",
+  options = SetOptions(
+    n_boot = 100, 
+    use_full = TRUE,
+    use_parallel = FALSE
+  )
 )
 
 summary(fit)

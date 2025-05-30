@@ -37,7 +37,9 @@ value specified here does not affect the results.}
 When provided, the cluster bootstrap will be used. Supports multi-way
 clustering by providing a vector of variable names (e.g., c("x", "y")).}
 
-\item{debug_mode}{A boolean value. If TRUE, the debug mode will be used.}
+\item{debug_mode}{A boolean value. If TRUE, the debug mode will be used. The
+debug model is for development purposes only and is not recommended for
+production use. Default is FALSE.}
 }
 \value{
 A named list of options.

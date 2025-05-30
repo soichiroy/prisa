@@ -9,7 +9,8 @@ peri(
   proxy_model,
   data,
   labeled_set_var_name,
-  options = SetOptions(),
+  options = SetOptions(n_boot = 500, use_full = TRUE, use_parallel = TRUE, n_cores =
+    parallel::detectCores() - 1, cluster_var_name = NULL),
   args_main_model = list(),
   args_proxy_model = list()
 )
@@ -18,14 +19,15 @@ peri(
 \item{main_model}{A function that estimates the target parameter with the
 labeled data. The function takes the data as the first argument and
 returns the estimate of the target parameter. The target parameter must
-be a scalar. The additional arguments to the main_model function must be
-provided in the args_main_model argument.}
+be a scalar or vector. The additional arguments to the main_model function
+must be provided in the args_main_model argument.}
 
 \item{proxy_model}{A function that estimates the target parameter with the
 proxy variables. The function takes the data as the first argument and
 returns the estimate of the target parameter. The target parameter must
-be a scalar or a vector. The additional arguments to the proxy_model
-function must be provided in the args_proxy_model argument.}
+be a scalar or a vector. The number of returned elements should be same
+when evaluated on the labeled and full data. The additional arguments to
+the proxy_model function must be provided in the args_proxy_model argument.}
 
 \item{data}{A data frame that contains the labeled and unlabeled data. The
 rows that contains the labeled data must be indicated by a variable in
@@ -36,7 +38,8 @@ labeled_set_var_name argument.}
 rows are labeled or not. The variable must be binary.}
 
 \item{options}{A list of options for the analysis. The values must be set
-by the \code{\link[=SetOptions]{SetOptions()}}.}
+by the \code{\link[=SetOptions]{SetOptions()}}. Please see the documentation of \code{\link[=SetOptions]{SetOptions()}} for
+more details on the accepted options.}
 
 \item{args_main_model}{A list of additional arguments to be passed to the
 main_model function. The list must be named.}
@@ -73,7 +76,12 @@ fit <- peri(
   main_model = fn_true,
   proxy_model = fn_proxy,
   data = df,
-  labeled_set_var_name = "is_labeled"
+  labeled_set_var_name = "is_labeled",
+  options = SetOptions(
+    n_boot = 100, 
+    use_full = TRUE,
+    use_parallel = FALSE
+  )
 )
 
 summary(fit)
