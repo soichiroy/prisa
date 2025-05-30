@@ -47,7 +47,6 @@ Y <- 0.5 + D + X1 + 1.5 * X2 + rnorm(n = n_all, mean = 0, sd = 1)
 # Create a proxy variable. 
 Y_proxy_1 <- Y + rnorm(n = n_all, mean = D * X1 + (1 - D) * X2, sd = 1)
 
-
 # Create a data frame
 df <- data.frame(
   Y = Y,

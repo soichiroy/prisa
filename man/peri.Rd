@@ -38,7 +38,8 @@ labeled_set_var_name argument.}
 rows are labeled or not. The variable must be binary.}
 
 \item{options}{A list of options for the analysis. The values must be set
-by the \code{\link[=SetOptions]{SetOptions()}}.}
+by the \code{\link[=SetOptions]{SetOptions()}}. Please see the documentation of \code{\link[=SetOptions]{SetOptions()}} for
+more details on the accepted options.}
 
 \item{args_main_model}{A list of additional arguments to be passed to the
 main_model function. The list must be named.}

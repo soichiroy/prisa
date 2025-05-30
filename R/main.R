@@ -18,7 +18,8 @@
 #' @param labeled_set_var_name The name of the variable that indicates whether 
 #'   rows are labeled or not. The variable must be binary.
 #' @param options A list of options for the analysis. The values must be set 
-#'   by the [SetOptions()].
+#'   by the [SetOptions()]. Please see the documentation of [SetOptions()] for
+#'   more details on the accepted options.
 #' @param args_main_model A list of additional arguments to be passed to the 
 #'   main_model function. The list must be named.
 #' @param args_proxy_model A list of additional arguments to be passed to the 
@@ -153,7 +154,9 @@ peri <- function(
 #' @param cluster_var_name The name of the variable that indicates the cluster. 
 #'   When provided, the cluster bootstrap will be used. Supports multi-way 
 #'   clustering by providing a vector of variable names (e.g., c("x", "y")).
-#' @param debug_mode A boolean value. If TRUE, the debug mode will be used. 
+#' @param debug_mode A boolean value. If TRUE, the debug mode will be used. The 
+#'   debug model is for development purposes only and is not recommended for
+#'   production use. Default is FALSE. 
 #' @return A named list of options.
 #' @seealso [peri()]
 #' @importFrom parallel detectCores
