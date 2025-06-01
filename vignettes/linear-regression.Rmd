@@ -108,7 +108,6 @@ fn_proxy_lm <- function(df) {
 }
 ```
 
-
 ## Apply Prediction-error Robust Inference
 
 We apply the PERI method by calling `peri()` function:
