@@ -7,6 +7,6 @@
 # * https://testthat.r-lib.org/articles/special-files.html
 
 library(testthat)
-library(peri)
+library(prisa)
 
-test_check("peri")
+test_check("prisa")

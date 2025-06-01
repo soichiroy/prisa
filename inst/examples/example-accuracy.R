@@ -32,7 +32,7 @@ fn_proxy_1 <- function(df) {
 }
 
 # Run functions
-fit_1 <- peri(
+fit_1 <- prisa(
   main_model = fn_main,
   proxy_model = fn_proxy_1,
   data = df_test,

@@ -25,12 +25,12 @@
 #' @param args_proxy_model A list of additional arguments to be passed to the 
 #'   proxy_model function. The list must be named.
 #' @seealso [SetOptions()]
-#' @example inst/examples/example-peri-minimal.R
+#' @example inst/examples/example-prisa-minimal.R
 #' @examplesIf interactive()
-#'   # See full examples in inst/examples/example-peri.R
-#'   # Or run: source(system.file("examples/example-peri.R", package = "peri"))
+#'   # See full examples in inst/examples/example-prisa.R
+#'   # Or run: source(system.file("examples/example-prisa.R", package = "prisa"))
 #' @export
-peri <- function(
+prisa <- function(
   main_model,
   proxy_model,
   data,
@@ -278,6 +278,6 @@ SetOptions <- function(
     options = options
   )
 
-  class(output) <- c(class(output), "peri")
+  class(output) <- c(class(output), "prisa")
   return(output)
 }

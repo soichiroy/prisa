@@ -1,18 +1,18 @@
 ---
-title: "Examples for peri: Prediction-error Robust Inference"
+title: "Examples for prisa: Prediction-error Robust Inference"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{peri Examples}
+  %\VignetteIndexEntry{prisa Examples}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
-# peri: Prediction-error Robust Inference
+# prisa: Prediction-error Robust Inference
 
-This vignette demonstrates usage examples for the `peri` function.
+This vignette demonstrates usage examples for the `prisa` function.
 
 ```{r setup, include=FALSE}
-library(peri)
+library(prisa)
 library(dplyr)
 ```
 
@@ -69,7 +69,7 @@ df <- data.frame(
 fn_true_mean <- function (df) mean(df$Y)
 fn_proxy_mean <- function (df) mean(df$Y_proxy_1)
 
-fit_mean <- peri(
+fit_mean <- prisa(
   main_model = fn_true_mean,
   proxy_model = fn_proxy_mean,
   data = df,
@@ -82,7 +82,7 @@ summary(fit_mean)
 fn_true_te <- function (df) mean(df$Y[df$D == 1]) - mean(df$Y[df$D == 0])
 fn_proxy_te <- function (df) mean(df$Y_proxy_1[df$D_proxy == 1]) - mean(df$Y_proxy_1[df$D_proxy == 0])
 
-fit_te <- peri(
+fit_te <- prisa(
   main_model = fn_true_te,
   proxy_model = fn_proxy_te,
   data = df,
@@ -95,7 +95,7 @@ summary(fit_te)
 fn_true_mean_bin <- function (df) mean(df$Y_binary)
 fn_proxy_mean_bin <- function (df) mean(df$Y_binary_proxy)
 
-fit_mean_bin <- peri(
+fit_mean_bin <- prisa(
   main_model = fn_true_mean_bin,
   proxy_model = fn_proxy_mean_bin,
   data = df,
@@ -108,7 +108,7 @@ summary(fit_mean_bin)
 fn_true_te_bin <- function (df) mean(df$Y_binary[df$D == 1]) - mean(df$Y_binary[df$D == 0])
 fn_proxy_te_bin <- function (df) mean(df$Y_binary_proxy[df$D_proxy == 1]) - mean(df$Y_binary_proxy[df$D_proxy == 0])
 
-fit_te_bin <- peri(
+fit_te_bin <- prisa(
   main_model = fn_true_te_bin,
   proxy_model = fn_proxy_te_bin,
   data = df,

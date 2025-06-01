@@ -110,11 +110,11 @@ fn_proxy_lm <- function(df) {
 
 ## Apply Prediction-error Robust Inference
 
-We apply the PERI method by calling `peri()` function:
+We apply the PERI method by calling `prisa()` function:
 
 ```{r peri_fit}
 ## With a model for Y_proxy_1
-fit_lm <- peri(
+fit_lm <- prisa(
   main_model = fn_true_lm,
   proxy_model = fn_proxy_lm,
   data = df,
@@ -176,10 +176,10 @@ fn_proxy_lm_run <- function(df) {
 ```
 
 
-Now, we can call `peri()`.
+Now, we can call `prisa()`.
 
 ```{r}
-fit_lm_2 <- peri(
+fit_lm_2 <- prisa(
   main_model = fn_true_lm,
   proxy_model = fn_proxy_lm_run,
   data = df,

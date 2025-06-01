@@ -1,4 +1,4 @@
-# Minimal example for peri function
+# Minimal example for prisa function
 set.seed(1234)
 
 # True labels (unobserved)
@@ -19,7 +19,7 @@ fn_proxy <- function(df) {
   mean(df$Y_proxy, na.rm = TRUE)
 }
 
-fit <- peri(
+fit <- prisa(
   main_model = fn_true,
   proxy_model = fn_proxy,
   data = df,

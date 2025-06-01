@@ -1,32 +1,32 @@
-#' @title Summary for MLcovar results
-#' #' @description Provides a summary of the results from the MLcovar function.
+#' @title Summary for prisa results
+#' @description Provides a summary of the results from the prisa function.
 #'
-#' @param object An object of class "MLcovar" returned by the MLcovar function.
+#' @param object An object of class "prisa" returned by the prisa function.
 #' @param ... Additional arguments.
 #' @return A list containing the summary of the results.
 #' @export
-summary.peri <- function(object, ...) {
-  if (!inherits(object, "peri")) {
-    stop("The object must be of class 'peri'.")
+summary.prisa <- function(object, ...) {
+  if (!inherits(object, "prisa")) {
+    stop("The object must be of class 'prisa'.")
   }
 
   estimates <- object[c("estimates", "data_list")]
-  class(estimates) <- c(class(estimates), "summary.peri")
+  class(estimates) <- c(class(estimates), "summary.prisa")
   return(estimates)
 }
 
-#' @title Print summary for peri results
+#' @title Print summary for prisa results
 #'
-#' @description Prints the summary of the results from the peri function.
+#' @description Prints the summary of the results from the prisa function.
 #'
-#' @param x An object of class "summary.peri" returned by the summary.peri
+#' @param x An object of class "summary.prisa" returned by the summary.prisa
 #'  function.
 #' @param digits The number of significant digits to print. Default is 4.
 #' @param ... Additional arguments.
 #' @importFrom cli cli_h1 cli_h2 cli_h3
 #' @export
-print.summary.peri <- function(x, digits = 4, ...) {
-  cli::cli_h1("Prediction-error Robust Inference (peri) Results")
+print.summary.prisa <- function(x, digits = 4, ...) {
+  cli::cli_h1("Prediction-error Robust Inference (prisa) Results")
   cli::cli_h2("Main Estimates")
   print(
     format(as.data.frame(x$estimates$main), digits = digits)

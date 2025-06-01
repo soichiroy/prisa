@@ -1,8 +1,8 @@
 #' Conduct accuracy analysis
 #'
 #' @description Compute ell-value, u-value, and h-value
-#' @param result an object of class “peri”, usually, a result of a call to
-#'   \code{\link{peri}}.
+#' @param result an object of class 'prisa', usually, a result of a call to
+#'   \code{\link{prisa}}.
 #' @param zeta A vector of variance reduction factor ([0, 1)).
 #'   Default is between 0.05 and 0.8. A particular value of zeta means that we 
 #'   want to reduce the variance to zeta * 100%, that is, the variance will be 

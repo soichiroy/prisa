@@ -7,8 +7,8 @@
 accuracy(result, zeta = seq(from = 0.05, to = 0.8, by = 0.05))
 }
 \arguments{
-\item{result}{an object of class “peri”, usually, a result of a call to
-\code{\link{peri}}.}
+\item{result}{an object of class 'prisa', usually, a result of a call to
+\code{\link{prisa}}.}
 
 \item{zeta}{A vector of variance reduction factor ([0, 1)).
 Default is between 0.05 and 0.8. A particular value of zeta means that we
@@ -54,7 +54,7 @@ fn_proxy_1 <- function(df) {
 }
 
 # Run functions
-fit_1 <- peri(
+fit_1 <- prisa(
   main_model = fn_main,
   proxy_model = fn_proxy_1,
   data = df_test,
