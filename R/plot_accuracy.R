@@ -34,6 +34,7 @@ plot_accuracy_single_param <- function(df) {
     ) +
     labs(x = "Variance reduction factor", y = paste0("\u2113", "-value")) +
     plot_theme
+
   p2 <- df %>%
     drop_na(.data$zeta, .data$uvalue) %>%
     ggplot(aes(x = zeta, y = uvalue)) +

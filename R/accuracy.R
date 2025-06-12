@@ -48,7 +48,7 @@ accuracy <- function(
     n = n,
     n_ell = n_ell,
     elss = elss,
-    r_sq = R_sq 
+    r_sq = R_sq
   )
 }
 
