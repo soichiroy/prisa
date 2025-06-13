@@ -245,20 +245,22 @@ SetOptions <- function(
   # Standard error of the labeled-only estimator
   se_labeled_only <- sqrt(var_estimates$var_labeled_only)
 
+  critical_value <- qnorm(1 - 0.05 / 2)
+
   # Main information
   main_df <- data.frame(
-    estimate = main_estimate,
+    estimate = .AddName(main_estimate),
     std_err = std_error,
-    ci_lower_95 = main_estimate - qnorm(1 - 0.05 / 2) * std_error,
-    ci_upper_95 = main_estimate + qnorm(1 - 0.05 / 2) * std_error,
+    ci_lower_95 = main_estimate - critical_value * std_error,
+    ci_upper_95 = main_estimate + critical_value * std_error,
     elss = var_estimates$elss
   )
 
   label_only_df <- data.frame(
-    estimate = point_estimate$tau_ell,
+    estimate = .AddName(point_estimate$tau_ell),
     std_err = se_labeled_only,
-    ci_lower_95 = point_estimate$tau_ell - qnorm(1 - 0.05 / 2) * se_labeled_only,
-    ci_upper_95 = point_estimate$tau_ell + qnorm(1 - 0.05 / 2) * se_labeled_only,
+    ci_lower_95 = point_estimate$tau_ell - critical_value * se_labeled_only,
+    ci_upper_95 = point_estimate$tau_ell + critical_value * se_labeled_only,
     # Add the true sample size for the labeled only estimator
     elss = data_list$n_ell 
   )
