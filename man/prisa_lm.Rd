@@ -15,6 +15,29 @@ prisa_lm(
   args_proxy_model = list()
 )
 }
+\arguments{
+\item{main_formula}{A formula for the main model. The same argument as in \code{lm()}.}
+
+\item{proxy_formula}{A formula for the proxy model. The same argument as in \code{lm()}.}
+
+\item{data}{A data frame that contains the labeled and unlabeled data. The
+rows that contains the labeled data must be indicated by a variable in
+the data frame. The variable name must be provided in the
+labeled_set_var_name argument.}
+
+\item{labeled_set_var_name}{The name of the variable that indicates whether
+rows are labeled or not. The variable must be binary.}
+
+\item{options}{A list of options for the analysis. The values must be set
+by the \code{\link[=SetOptions]{SetOptions()}}. Please see the documentation of \code{\link[=SetOptions]{SetOptions()}} for
+more details on the accepted options.}
+
+\item{args_main_model}{A list of additional arguments to be passed to the
+main_model function. The list must be named.}
+
+\item{args_proxy_model}{A list of additional arguments to be passed to the
+proxy_model function. The list must be named.}
+}
 \description{
 Implement the Prediction-error Robust Inference for linear regression
 }

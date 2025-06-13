@@ -1,6 +1,9 @@
 
 #' Implement the Prediction-error Robust Inference for linear regression
 #' 
+#' @param main_formula A formula for the main model. The same argument as in `lm()`.
+#' @param proxy_formula A formula for the proxy model. The same argument as in `lm()`.
+#' @inheritParams prisa
 prisa_lm <- function(
   main_formula,
   proxy_formula,
