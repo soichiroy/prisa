@@ -88,7 +88,7 @@ fn_proxy_mean <- function (df) {
 }
 
 ## Estimate with the proposed estimator
-fit_mean <- MLcovar(
+fit_mean <- prisa(
   main_model = fn_true_mean,
   proxy_model = fn_proxy_mean,
   data = df,

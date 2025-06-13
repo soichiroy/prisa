@@ -75,6 +75,31 @@
   return(model_fit)
 }
 
+
+#' Add a name to the vector if it is not already named
+#' @param x A numeric vector.
+#' @noRd 
+.AddName <- function(x) {
+  if (!is.null(names(x)) && all(names(x) != "")) {
+    return(x)
+  }
+  
+  names(x) <- paste0("Estimate_", seq_along(x))
+  return(x)
+}
+
+#' Remove names from a vector
+#' @param x A numeric vector.
+#' @noRd 
+.RemoveName <- function(x) {
+  if (is.null(names(x)) || all(names(x) == "")) {
+    return(x)
+  }
+  
+  names(x) <- NULL
+  return(x)
+}
+
 #' Estimate optimal coefficients
 #' 
 #' @param cov_estimates An output from .ProcessCovarianceEstimates.
@@ -95,8 +120,10 @@
   tau_ell <- point_estimate$tau_ell
   delta_diff <- point_estimate$delta_diff
 
+
   # Proposed estimator: unbiased + coef * (cv_estimators)
-  combined_estimate <- tau_ell - as.vector(t(coef_estimates) %*% delta_diff) 
+  est_adjust_term <- .RemoveName(as.vector(t(coef_estimates) %*% delta_diff))
+  combined_estimate <- tau_ell - est_adjust_term
   combined_estimate
 }
 
