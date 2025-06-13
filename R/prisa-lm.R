@@ -21,6 +21,7 @@ prisa_lm <- function(
 ) {
 
   # TODO: Support for additional arguments in the main and proxy models
+  # TODO: Check the scope of main_formula and proxy_formula objects
   main_lm_model <- function(df) {
     fit <- lm(as.formula(main_formula), data = df)
     return(fit$coefficients)
