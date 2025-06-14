@@ -175,6 +175,10 @@ SetOptions <- function(
   if (n_cores > parallel::detectCores() && use_parallel) {
     stop("n_cores must be less than the total number of cores available.")
   }
+  if (n_cores == 1 && use_parallel) {
+    warning("n_cores must be >= 2 to use parallel processing.")
+    use_parallel <- FALSE
+  }
   if (!is.null(cluster_var_name) && !is.character(cluster_var_name)) {
     stop("cluster_var_name must be a string or a vector of strings.")
   }
