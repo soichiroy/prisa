@@ -25,15 +25,15 @@ prisa_lm <- function(
   if (!is.list(args_proxy_model)) {
     stop("args_proxy_model must be a list.")
   }
-  
+
   # TODO: Support for additional arguments in the main and proxy models
   # TODO: Check the scope of main_formula and proxy_formula objects
-  main_lm_model <- function(df, formula, weights = NULL) {
+  .main_lm_model <- function(df, formula, weights = NULL) {
     fit <- lm(formula, data = df, weights = weights)
     return(fit$coefficients)
   }
 
-  proxy_lm_model <- function(df, formula, weights = NULL) {
+  .proxy_lm_model <- function(df, formula, weights = NULL) {
     fit <- lm(formula, data = df, weights = weights)
     return(fit$coefficients)
   }
@@ -52,8 +52,8 @@ prisa_lm <- function(
   }
 
   .PredictionErrorRobustInference(
-    main_model = main_lm_model,
-    proxy_model = proxy_lm_model,
+    main_model = .main_lm_model,
+    proxy_model = .proxy_lm_model,
     data = data,
     labeled_set_var_name = labeled_set_var_name,
     options = options,
