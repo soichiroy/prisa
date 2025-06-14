@@ -19,7 +19,13 @@ prisa_lm <- function(
   args_main_model = list(),
   args_proxy_model = list()
 ) {
-
+  if (!is.list(args_main_model)) {
+    stop("args_main_model must be a list.")
+  }
+  if (!is.list(args_proxy_model)) {
+    stop("args_proxy_model must be a list.")
+  }
+  
   # TODO: Support for additional arguments in the main and proxy models
   # TODO: Check the scope of main_formula and proxy_formula objects
   main_lm_model <- function(df, formula, weights = NULL) {
@@ -36,13 +42,15 @@ prisa_lm <- function(
   args_main_model$formula <- as.formula(main_formula)
   args_proxy_model$formula <- as.formula(proxy_formula)
 
+  # TODO: When weights are provided, update ELSS to reflect the weights for the 
+  # labeled only estimator.
   if ("weights" %in% names(args_main_model)) {
     args_main_model$weights <- NULL
   }
   if ("weights" %in% names(args_proxy_model)) {
     args_proxy_model$weights <- NULL
   }
-  
+
   .PredictionErrorRobustInference(
     main_model = main_lm_model,
     proxy_model = proxy_lm_model,
