@@ -22,22 +22,27 @@ prisa_lm <- function(
 
   # TODO: Support for additional arguments in the main and proxy models
   # TODO: Check the scope of main_formula and proxy_formula objects
-  main_lm_model <- function(df, formula) {
-    fit <- lm(formula, data = df)
+  main_lm_model <- function(df, formula, weights = NULL) {
+    fit <- lm(formula, data = df, weights = weights)
     return(fit$coefficients)
   }
 
-  proxy_lm_model <- function(df, formula) {
-    fit <- lm(formula, data = df)
+  proxy_lm_model <- function(df, formula, weights = NULL) {
+    fit <- lm(formula, data = df, weights = weights)
     return(fit$coefficients)
   }
 
   # Explicitly pass formula objects
-  args_main_model <-
-    c(args_main_model, list(formula = as.formula(main_formula)))
-  args_proxy_model <-
-    c(args_proxy_model, list(formula = as.formula(proxy_formula)))
+  args_main_model$formula <- as.formula(main_formula)
+  args_proxy_model$formula <- as.formula(proxy_formula)
 
+  if ("weights" %in% names(args_main_model)) {
+    args_main_model$weights <- NULL
+  }
+  if ("weights" %in% names(args_proxy_model)) {
+    args_proxy_model$weights <- NULL
+  }
+  
   .PredictionErrorRobustInference(
     main_model = main_lm_model,
     proxy_model = proxy_lm_model,
