@@ -39,7 +39,7 @@ prisa <- function(
     n_boot = 500,
     use_full = TRUE,
     use_parallel = TRUE,
-    n_cores = parallel::detectCores() - 1,
+    n_cores = max(1, parallel::detectCores() - 1),
     cluster_var_name = NULL
   ),
   args_main_model = list(),
@@ -157,7 +157,7 @@ SetOptions <- function(
     n_boot = 500,
     use_full = TRUE,
     use_parallel = TRUE,
-    n_cores = parallel::detectCores() - 1,
+    n_cores = max(1, parallel::detectCores() - 1),
     seed_value = floor(runif(1, 1, 1e7)),
     cluster_var_name = NULL,
     debug_mode = FALSE) {
