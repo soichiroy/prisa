@@ -82,7 +82,8 @@ prisa <- function(
     proxy_model,
     data_list,
     args_main_model,
-    args_proxy_model
+    args_proxy_model,
+    throw_warning = TRUE
   )
 
   # Naive bootstrap implementation
