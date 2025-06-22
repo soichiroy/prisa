@@ -2,7 +2,7 @@
 % Please edit documentation in R/prisa-lm.R
 \name{prisa_lm}
 \alias{prisa_lm}
-\title{Implement the Prediction-error Robust Inference for linear regression}
+\title{Prediction-error Robust Inference for linear regression}
 \usage{
 prisa_lm(
   main_formula,
@@ -39,5 +39,8 @@ main_model function. The list must be named.}
 proxy_model function. The list must be named.}
 }
 \description{
-Implement the Prediction-error Robust Inference for linear regression
+Prediction-error Robust Inference for linear regression
+}
+\seealso{
+\code{\link[stats:lm]{stats::lm()}}
 }

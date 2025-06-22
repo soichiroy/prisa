@@ -2,14 +2,14 @@
 % Please edit documentation in R/prisa-lm.R
 \name{prisa_glm}
 \alias{prisa_glm}
-\title{Implement the Prediction-error Robust Inference for generalized linear models}
+\title{Prediction-error Robust Inference for generalized linear models}
 \usage{
 prisa_glm(
   main_formula,
   proxy_formula,
   data,
   labeled_set_var_name,
-  family = gaussian(),
+  family,
   options = SetOptions(n_boot = 500, use_full = TRUE, use_parallel = TRUE, n_cores =
     parallel::detectCores() - 1, cluster_var_name = NULL),
   args_main_model = list(),
@@ -29,7 +29,9 @@ labeled_set_var_name argument.}
 \item{labeled_set_var_name}{The name of the variable that indicates whether
 rows are labeled or not. The variable must be binary.}
 
-\item{family}{A description of the error distribution and link function to be used in the model. See \code{glm()}.}
+\item{family}{A description of the error distribution and link function to be
+used in the model. See the family argument in the \code{glm()} function for the
+details.}
 
 \item{options}{A list of options for the analysis. The values must be set
 by the \code{\link[=SetOptions]{SetOptions()}}. Please see the documentation of \code{\link[=SetOptions]{SetOptions()}} for
@@ -42,7 +44,7 @@ main_model function. The list must be named.}
 proxy_model function. The list must be named.}
 }
 \description{
-Implement the Prediction-error Robust Inference for generalized linear models
+Prediction-error Robust Inference for generalized linear models
 }
 \seealso{
 \code{\link[stats:glm]{stats::glm()}}
