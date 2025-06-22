@@ -3,6 +3,7 @@
 #' @param main_formula A formula for the main model. The same argument as in `lm()`.
 #' @param proxy_formula A formula for the proxy model. The same argument as in `lm()`.
 #' @inheritParams prisa
+#' @export
 prisa_lm <- function(
   main_formula,
   proxy_formula,
@@ -67,6 +68,8 @@ prisa_lm <- function(
 #' @param proxy_formula A formula for the proxy model. The same argument as in `glm()`.
 #' @param family A description of the error distribution and link function to be used in the model. See `glm()`.
 #' @inheritParams prisa
+#' @seealso [stats::glm()]
+#' @export
 prisa_glm <- function(
   main_formula,
   proxy_formula,
