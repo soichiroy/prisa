@@ -82,7 +82,8 @@ prisa <- function(
     proxy_model,
     data_list,
     args_main_model,
-    args_proxy_model
+    args_proxy_model,
+    throw_warning = TRUE
   )
 
   # Naive bootstrap implementation
@@ -139,7 +140,8 @@ prisa <- function(
 #'  should be run in parallel. Default is TRUE. 
 #' @param n_cores The number of cores to be used for bootstrap interactions.
 #'  Default is the number of cores available minus one. This value will be
-#'  ignored if use_parallel is FALSE.
+#'  ignored if use_parallel is FALSE. For use_parallel = TRUE, n_cores must be
+#'  greater or equal to 2.
 #' @param seed_value The seed value for the random number generator. Default is
 #'  drawn from a uniform between 1 and 1e7. When use_parallel is FALSE, the seed
 #'  value specified here does not affect the results. 
@@ -175,6 +177,10 @@ SetOptions <- function(
   if (n_cores > parallel::detectCores() && use_parallel) {
     stop("n_cores must be less than the total number of cores available.")
   }
+  if (n_cores <= 1 && use_parallel) {
+    warning("n_cores must be >= 2 to use parallel processing.")
+    use_parallel <- FALSE
+  }
   if (!is.null(cluster_var_name) && !is.character(cluster_var_name)) {
     stop("cluster_var_name must be a string or a vector of strings.")
   }
@@ -188,7 +194,7 @@ SetOptions <- function(
     n_boot = n_boot,
     use_full = use_full,
     use_parallel = use_parallel,
-    n_cores = n_cores,
+    n_cores = floor(n_cores),
     seed_value = seed_value,
     cluster_var_name = cluster_var_name,
     debug_mode = debug_mode

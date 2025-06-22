@@ -5,15 +5,23 @@
 #' @param use_label_only Boolean. If TRUE, only the labeled set estimates are
 #'   returned. Default is FALSE. 
 .GetPointEstimates <- function(
-    main_model,
-    proxy_model,
-    data_list,
-    args_main_model,
-    args_proxy_model,
-    use_label_only = FALSE) {
+  main_model,
+  proxy_model,
+  data_list,
+  args_main_model,
+  args_proxy_model,
+  use_label_only = FALSE,
+  throw_warning = FALSE
+) {
 
   # Unbiased estimator
   tau_ell <- .FitModel(main_model, data_list$dat_labeled, args_main_model)
+  if (throw_warning && length(tau_ell) > 10) {
+    warning(
+      "The number of parameters in the main model is greater than 10. ",
+      "Consider returning only the quantities of interest from the main_model function."
+    )
+  }
 
   # Biased estimators
   delta_ell <- .FitModel(proxy_model, data_list$dat_labeled, args_proxy_model)
