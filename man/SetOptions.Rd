@@ -8,7 +8,7 @@ SetOptions(
   n_boot = 500,
   use_full = TRUE,
   use_parallel = TRUE,
-  n_cores = max(1, parallel::detectCores() - 1),
+  n_cores = parallel::detectCores() - 1,
   seed_value = floor(runif(1, 1, 1e+07)),
   cluster_var_name = NULL,
   debug_mode = FALSE
@@ -27,7 +27,8 @@ should be run in parallel. Default is TRUE.}
 
 \item{n_cores}{The number of cores to be used for bootstrap interactions.
 Default is the number of cores available minus one. This value will be
-ignored if use_parallel is FALSE.}
+ignored if use_parallel is FALSE. For use_parallel = TRUE, n_cores must be
+greater or equal to 2.}
 
 \item{seed_value}{The seed value for the random number generator. Default is
 drawn from a uniform between 1 and 1e7. When use_parallel is FALSE, the seed
