@@ -65,7 +65,7 @@ print.summary.prisa <- function(x, digits = 4, ...) {
   invisible(data_list)
 }
 
-#' @title Print efficiency gain from PERI
+#' @title Print efficiency gain fromprisa 
 #' @importFrom cli cli_h3 cli_ul
 #' @noRd
 .PrintEfficiencyGain <- function(estimates, data_list) {
@@ -74,7 +74,7 @@ print.summary.prisa <- function(x, digits = 4, ...) {
   elss <- estimates$main$elss
   n_ell <- data_list$n_ell
 
-  cli::cli_h3("Efficiency Gain from PERI")
+  cli::cli_h3("Efficiency Gain from prisa")
   cli::cli_ul(c(
     "Effective Labeled Sample Size (ELSS): {round(elss, 3)}",
     "Contribution from the unlabeled set: {round(elss - n_ell, 1)}",
@@ -85,27 +85,27 @@ print.summary.prisa <- function(x, digits = 4, ...) {
 
 #' @title Obtain estimation results
 #'
-#' @param x An object of class "peri" returned by the peri function.
+#' @param x An object of class "prisa" returned by the prisa function.
 #' @return A tibble with the following columns:
 #' \describe{
 #'   \item{estimator}{The type of estimator used (Prediction-error robust
-#'    inference (peri) or labeled_only).}
+#'    inference (prisa) or labeled_only).}
 #'   \item{estimate}{The estimated value.}
 #'   \item{std_err}{The standard error of the estimate.}
 #'   \item{ci_lower_95}{The lower bound of the 95% confidence interval.}
 #'   \item{ci_upper_95}{The upper bound of the 95% confidence interval.}
 #'   \item{elss}{The effective labeled sample size. For the labeled_only
 #'    estimator, this corresponds to the number of labeled observations. For the
-#'    peri, the estimated ELSS is shown.}
+#'    prisa, the estimated ELSS is shown.}
 #' }
-#' @seealso [peri()]
+#' @seealso [prisa()]
 #' @export
 #' @importFrom dplyr mutate bind_rows select everything
 #' @importFrom tibble as_tibble rownames_to_column
 #' @importFrom rlang .data
 get_estimates <- function(x) {
-  if (!inherits(x, "peri")) {
-    stop("The object must be of class 'peri'.")
+  if (!inherits(x, "prisa")) {
+    stop("The object must be of class 'prisa'.")
   }
 
   df_main <- rownames_to_column(x$estimates$main, var = "variable")
@@ -114,7 +114,7 @@ get_estimates <- function(x) {
     var = "variable"
   )
   out <- bind_rows(
-    mutate(df_main, estimator = "peri"),
+    mutate(df_main, estimator = "prisa"),
     mutate(df_labeled_only, estimator = "labeled_only")
   ) %>%
     select(.data$variable, .data$estimator, everything())

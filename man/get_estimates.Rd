@@ -7,25 +7,25 @@
 get_estimates(x)
 }
 \arguments{
-\item{x}{An object of class "peri" returned by the peri function.}
+\item{x}{An object of class "prisa" returned by the prisa function.}
 }
 \value{
 A tibble with the following columns:
 \describe{
 \item{estimator}{The type of estimator used (Prediction-error robust
-inference (peri) or labeled_only).}
+inference (prisa) or labeled_only).}
 \item{estimate}{The estimated value.}
 \item{std_err}{The standard error of the estimate.}
 \item{ci_lower_95}{The lower bound of the 95\% confidence interval.}
 \item{ci_upper_95}{The upper bound of the 95\% confidence interval.}
 \item{elss}{The effective labeled sample size. For the labeled_only
 estimator, this corresponds to the number of labeled observations. For the
-peri, the estimated ELSS is shown.}
+prisa, the estimated ELSS is shown.}
 }
 }
 \description{
 Obtain estimation results
 }
 \seealso{
-\code{\link[=peri]{peri()}}
+\code{\link[=prisa]{prisa()}}
 }
