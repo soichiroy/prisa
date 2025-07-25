@@ -58,7 +58,7 @@ prisa <- function(
 
 #' @title Main implementation of the Prediction-error Robust Inference 
 #' 
-#' @inheritParams peri
+#' @inheritParams prisa
 #' @noRd 
 .PredictionErrorRobustInference <- function(
   main_model,
@@ -128,7 +128,7 @@ prisa <- function(
 
 #' Set options for the main function
 #' 
-#' Returns a list of configuration options to be passed to [peri()].
+#' Returns a list of configuration options to be passed to [prisa()].
 #' 
 #' @param n_boot The number of bootstrap samples for the labeled data. Default 
 #'  is 500. When use_full is TRUE, the full data is also used for the bootstrap.
@@ -150,7 +150,7 @@ prisa <- function(
 #'   debug model is for development purposes only and is not recommended for
 #'   production use. Default is FALSE. 
 #' @return A named list of options.
-#' @seealso [peri()]
+#' @seealso [prisa()]
 #' @importFrom parallel detectCores
 #' @export 
 SetOptions <- function(
