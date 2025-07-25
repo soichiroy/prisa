@@ -112,7 +112,7 @@ fn_proxy_lm <- function(df) {
 
 We apply the PERI method by calling `prisa()` function:
 
-```{r peri_fit}
+```{r prisa_fit}
 ## With a model for Y_proxy_1
 fit_lm <- prisa(
   main_model = fn_true_lm,
@@ -127,7 +127,7 @@ fit_lm <- prisa(
 )
 ```
 
-In the `peri()` call, we can specify various options via the `SetOptions()`
+In the `prisa()` call, we can specify various options via the `SetOptions()`
 function. For example, `n_boot` controls the number of bootstrap iterations.
 We recommend setting the value low for a development phase and increase the 
 number once you want to get accurate estimates.
@@ -136,7 +136,7 @@ number once you want to get accurate estimates.
 
 Once the estimation is complete, we can view the summary of estimates:
 
-```{r peri_fit_summary}
+```{r prisa_fit_summary}
 summary(fit_lm)
 ```
 

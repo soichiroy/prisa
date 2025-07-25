@@ -45,8 +45,8 @@ production use. Default is FALSE.}
 A named list of options.
 }
 \description{
-Returns a list of configuration options to be passed to \code{\link[=peri]{peri()}}.
+Returns a list of configuration options to be passed to \code{\link[=prisa]{prisa()}}.
 }
 \seealso{
-\code{\link[=peri]{peri()}}
+\code{\link[=prisa]{prisa()}}
 }
