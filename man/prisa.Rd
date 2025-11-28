@@ -85,7 +85,7 @@ fit <- prisa(
 )
 
 summary(fit)
-\dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+\dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
   # See full examples in inst/examples/example-prisa.R
   # Or run: source(system.file("examples/example-prisa.R", package = "prisa"))
 \dontshow{\}) # examplesIf}

@@ -45,16 +45,23 @@
     )
   }
 
+  # Get all objects from global environment to export to workers
+  # This ensures user-defined functions (main_model, proxy_model) have access
+  # to their dependencies
+  global_objects <- ls(envir = .GlobalEnv, all.names = TRUE)
+  loaded_packages <- loadedNamespaces()
+
   # Bootstrap for the labeled data to estimate the variance-covariance matrix
   # of the main estimators based on the labeled data.
   boot_estimate_labeled <- foreach(
     i = seq_len(n_boot),
     .combine = rbind,
-    .packages = c("dplyr"),
+    .packages = loaded_packages,
     .inorder = FALSE,
     .export = c(
       ".GetPointEstimates",
-      ".ResampleDataFrame"
+      ".ResampleDataFrame",
+      global_objects
     )
   ) %dopar%
     {
@@ -97,8 +104,12 @@
     i = seq_len(n_boot),
     .combine = rbind,
     .inorder = FALSE,
-    .packages = c("dplyr"),
-    .export = c(".ResampleDataFrame", ".FitModel")
+    .packages = loaded_packages,
+    .export = c(
+      ".ResampleDataFrame",
+      ".FitModel",
+      global_objects
+    )
   ) %dopar%
     {
       data_main_resampled <- .ResampleDataFrame(data_main, var_cluster)
