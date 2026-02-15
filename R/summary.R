@@ -73,12 +73,16 @@ print.summary.prisa <- function(x, digits = 4, ...) {
   std_err_reduction <- round(100 * (std_err_reduction - 1))
   elss <- estimates$main$elss
   n_ell <- data_list$n_ell
+  rho <- estimates$main$rho
+  rho_lower <- estimates$main$rho_lower
+  rho_upper <- estimates$main$rho_upper
 
   cli::cli_h3("Efficiency Gain from prisa")
   cli::cli_ul(c(
     "Effective Labeled Sample Size (ELSS): {round(elss, 3)}",
     "Contribution from the unlabeled set: {round(elss - n_ell, 1)}",
-    "Standard Error Reduction: {std_err_reduction}%"
+    "Standard Error Reduction: {std_err_reduction}%",
+    "Proxy Quality (rho): {round(rho, 4)} [{round(rho_lower, 4)}, {round(rho_upper, 4)}]"
   ))
   invisible(estimates)
 }
@@ -97,6 +101,10 @@ print.summary.prisa <- function(x, digits = 4, ...) {
 #'   \item{elss}{The effective labeled sample size. For the labeled_only
 #'    estimator, this corresponds to the number of labeled observations. For the
 #'    prisa, the estimated ELSS is shown.}
+#'   \item{rho}{The estimated proxy quality (effective correlation). NA for
+#'    the labeled_only estimator.}
+#'   \item{rho_lower}{Lower bound of the 95% CI for rho. NA for labeled_only.}
+#'   \item{rho_upper}{Upper bound of the 95% CI for rho. NA for labeled_only.}
 #' }
 #' @seealso [prisa()]
 #' @export
@@ -117,6 +125,11 @@ get_estimates <- function(x) {
     mutate(df_main, estimator = "prisa"),
     mutate(df_labeled_only, estimator = "labeled_only")
   ) %>%
-    select(.data$variable, .data$estimator, everything())
+    select(
+      .data$variable, .data$estimator,
+      .data$estimate, .data$std_err,
+      .data$ci_lower_95, .data$ci_upper_95,
+      .data$elss, .data$rho, .data$rho_lower, .data$rho_upper
+    )
   as_tibble(out)
 }

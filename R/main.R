@@ -108,6 +108,11 @@ prisa <- function(
     options
   )
 
+  # Compute rho (proxy quality)
+  rho_estimates <- .ComputeRho(
+    var_estimates, data_list$prop, data_list$n_ell, options
+  )
+
   # Combine estimates
   main_estimate <- .CombineEstimates(point_estimate, coef_estimates)
 
@@ -119,6 +124,7 @@ prisa <- function(
       coef_estimates,
       cov_estimates,
       var_estimates,
+      rho_estimates,
       data_list,
       options
     )
@@ -236,6 +242,7 @@ SetOptions <- function(
     coef_estimates,
     cov_estimates,
     var_estimates,
+    rho_estimates,
     data_list,
     options) {
 
@@ -253,7 +260,10 @@ SetOptions <- function(
     std_err = std_error,
     ci_lower_95 = main_estimate - critical_value * std_error,
     ci_upper_95 = main_estimate + critical_value * std_error,
-    elss = var_estimates$elss
+    elss = var_estimates$elss,
+    rho = rho_estimates$rho,
+    rho_lower = rho_estimates$rho_lower,
+    rho_upper = rho_estimates$rho_upper
   )
 
   label_only_df <- data.frame(
@@ -262,7 +272,10 @@ SetOptions <- function(
     ci_lower_95 = point_estimate$tau_ell - critical_value * se_labeled_only,
     ci_upper_95 = point_estimate$tau_ell + critical_value * se_labeled_only,
     # Add the true sample size for the labeled only estimator
-    elss = data_list$n_ell 
+    elss = data_list$n_ell,
+    rho = NA_real_,
+    rho_lower = NA_real_,
+    rho_upper = NA_real_
   )
 
   # Other information necessary for the follow-up analysis
@@ -270,9 +283,10 @@ SetOptions <- function(
     point_estimate = point_estimate,
     coef_estimates = coef_estimates,
     cov_estimates = cov_estimates,
-    var_estimates = var_estimates
+    var_estimates = var_estimates,
+    rho_estimates = rho_estimates
   )
-  
+
   output <- list(
     estimates = list(main = main_df, labeled_only = label_only_df),
     additional_info = output_quantities,

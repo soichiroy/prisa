@@ -3,6 +3,8 @@
 #' @export
 #' @import ggplot2
 #' @import patchwork
+#' @importFrom rlang .data
+#' @importFrom scales percent_format
 #' @importFrom tidyr drop_na
 #'
 #' @param x an object of class “accuracy”, usually, a result of a call to \code{\link{accuracy}}.
@@ -26,17 +28,17 @@ plot_accuracy_single_param <- function(df) {
     )
   p1 <- df %>%
     drop_na(.data$zeta, .data$ellvalue) %>%
-    ggplot(aes(x = zeta, y = ellvalue)) +
+    ggplot(aes(x = .data$zeta, y = .data$ellvalue)) +
     geom_line(linewidth = 1.1) +
     scale_x_continuous(
       limits = c(zeta_min, zeta_max),
       labels = scales::percent_format(),
     ) +
-    labs(x = "Variance reduction factor", y = paste0("\u2113", "-value")) +
+    labs(x = "Variance reduction factor", y = "l-value") +
     plot_theme
   p2 <- df %>%
     drop_na(.data$zeta, .data$uvalue) %>%
-    ggplot(aes(x = zeta, y = uvalue)) +
+    ggplot(aes(x = .data$zeta, y = .data$uvalue)) +
     geom_line(linewidth = 1.1) +
     scale_x_continuous(
       limits = c(zeta_min, zeta_max),
@@ -47,7 +49,7 @@ plot_accuracy_single_param <- function(df) {
 
   p3 <- df %>%
     drop_na(.data$zeta, .data$hvalue) %>%
-    ggplot(aes(x = zeta, y = hvalue)) +
+    ggplot(aes(x = .data$zeta, y = .data$hvalue)) +
     geom_line(linewidth = 1.1) +
     scale_x_continuous(
       limits = c(zeta_min, zeta_max),

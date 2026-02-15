@@ -178,3 +178,31 @@
   elss <- n_ell * var_tau_ell / var_est
   list(var = var_est, elss = elss, var_labeled_only = var_tau_ell)
 }
+
+#' Compute rho (proxy quality) from variance reduction
+#'
+#' Computes the effective rho from the ratio of proposed and labeled-only
+#' variances: rho^2 = (1 - Var_proposed / Var_labeled_only) / scale_const.
+#' Confidence intervals use the Fisher z-transform.
+#'
+#' @param var_estimates Output from .EstimateVariance().
+#' @param prop Proportion of labeled observations.
+#' @param n_ell Number of labeled observations.
+#' @param options Options list from SetOptions().
+#' @return A list with rho, rho_sq, rho_lower, rho_upper vectors.
+#' @noRd
+.ComputeRho <- function(var_estimates, prop, n_ell, options) {
+  scale_const <- ifelse(options$use_full, 1, 1 - prop)
+  rho_sq <- (1 - var_estimates$var / var_estimates$var_labeled_only) / scale_const
+  rho_sq <- pmin(pmax(rho_sq, 0), 1)  # clamp to [0, 1]
+  rho <- sqrt(rho_sq)
+
+  # Fisher z-transform CI
+  z <- atanh(rho)
+  se_z <- 1 / sqrt(n_ell - 3)
+  rho_lower <- tanh(z - qnorm(0.975) * se_z)
+  rho_upper <- tanh(z + qnorm(0.975) * se_z)
+
+  list(rho = rho, rho_sq = rho_sq,
+       rho_lower = rho_lower, rho_upper = rho_upper)
+}

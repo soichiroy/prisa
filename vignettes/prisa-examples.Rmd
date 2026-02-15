@@ -74,7 +74,7 @@ fit_mean <- prisa(
   proxy_model = fn_proxy_mean,
   data = df,
   labeled_set_var_name = "is_labeled",
-  options = SetOptions(n_boot = 500, use_full = TRUE)
+  options = SetOptions(n_boot = 500, use_full = TRUE, use_parallel = FALSE)
 )
 summary(fit_mean)
 
@@ -87,7 +87,7 @@ fit_te <- prisa(
   proxy_model = fn_proxy_te,
   data = df,
   labeled_set_var_name = "is_labeled",
-  options = SetOptions(n_boot = 500, use_full = TRUE)
+  options = SetOptions(n_boot = 500, use_full = TRUE, use_parallel = FALSE)
 )
 summary(fit_te)
 
@@ -100,7 +100,7 @@ fit_mean_bin <- prisa(
   proxy_model = fn_proxy_mean_bin,
   data = df,
   labeled_set_var_name = "is_labeled",
-  options = SetOptions(n_boot = 500, use_full = TRUE)
+  options = SetOptions(n_boot = 500, use_full = TRUE, use_parallel = FALSE)
 )
 summary(fit_mean_bin)
 
@@ -113,7 +113,7 @@ fit_te_bin <- prisa(
   proxy_model = fn_proxy_te_bin,
   data = df,
   labeled_set_var_name = "is_labeled",
-  options = SetOptions(n_boot = 500, use_full = TRUE)
+  options = SetOptions(n_boot = 500, use_full = TRUE, use_parallel = FALSE)
 )
 summary(fit_te_bin)
 ```

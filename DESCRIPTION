@@ -23,8 +23,9 @@ Suggests:
     knitr,
     rmarkdown,
     testthat (>= 3.0.0)
-Imports: 
+Imports:
     cli,
+    generics,
     doParallel,
     doRNG,
     dplyr,
@@ -33,6 +34,7 @@ Imports:
     magrittr,
     patchwork,
     purrr,
+    scales,
     rlang,
     tibble,
     tidyr

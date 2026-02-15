@@ -11,6 +11,8 @@
 
 \item{digits}{Number of significant digits to print. Default is 4.}
 
+\item{nrows}{Number of rows to display per variable. Default is 10.}
+
 \item{...}{Additional arguments (ignored).}
 }
 \description{

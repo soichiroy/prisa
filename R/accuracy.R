@@ -1,20 +1,27 @@
+#' @importFrom generics accuracy
+#' @export
+generics::accuracy
+
 #' Conduct accuracy analysis
 #'
 #' @description Compute ell-value, u-value, and h-value
-#' @param result an object of class 'prisa', usually, a result of a call to
+#' @param object an object of class 'prisa', usually, a result of a call to
 #'   \code{\link{prisa}}.
 #' @param zeta A vector of variance reduction factor ([0, 1)).
-#'   Default is between 0.05 and 0.8. A particular value of zeta means that we 
-#'   want to reduce the variance to zeta * 100%, that is, the variance will be 
+#'   Default is between 0.05 and 0.8. A particular value of zeta means that we
+#'   want to reduce the variance to zeta * 100%, that is, the variance will be
 #'   multiplied by (1 - zeta). For example, if we want to reduce the variance by
-#'   20%, we set zeta = 0.2. A larger value of zeta requires more observations. 
+#'   20%, we set zeta = 0.2. A larger value of zeta requires more observations.
+#' @param ... Additional arguments (ignored).
 #' @example inst/examples/example-accuracy.R
 #' @importFrom purrr map
 #' @export
-accuracy <- function(
-  result,
-  zeta = seq(from = 0.05, to = 0.8, by = 0.05)
+accuracy.prisa <- function(
+  object,
+  zeta = seq(from = 0.05, to = 0.8, by = 0.05),
+  ...
 ) {
+  result <- object
   zeta <- as.vector(zeta)
   n_ell <- result$data_list$n_ell
   n <- result$data_list$n_full - n_ell
@@ -84,6 +91,7 @@ accuracy <- function(
 #'
 #' @param object An object of class "accuracy" returned by accuracy().
 #' @param digits Number of significant digits to print. Default is 4.
+#' @param nrows Number of rows to display per variable. Default is 10.
 #' @param ... Additional arguments (ignored).
 #' @export
 summary.accuracy <- function(object, digits = 4, nrows = 10, ...) {
@@ -92,7 +100,7 @@ summary.accuracy <- function(object, digits = 4, nrows = 10, ...) {
   cat("Columns:\n")
   cat("  zeta: Variance reduction factor\n")
   cat("  elss: Effective labeled sample size\n")
-  cat("  ellvalue: \u2113-value (labeled sample size needed for target variance reduction)\n")
+  cat("  ellvalue: l-value (labeled sample size needed for target variance reduction)\n")
   cat("  uvalue: u-value (unlabeled sample size needed for target variance reduction)\n")
   cat("  hvalue: h-value\n")
   cat(strrep("-", 30), "\n")

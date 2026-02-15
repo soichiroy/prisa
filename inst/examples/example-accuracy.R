@@ -37,7 +37,7 @@ fit_1 <- prisa(
   proxy_model = fn_proxy_1,
   data = df_test,
   labeled_set_var_name = "is_labeled",
-  options = SetOptions(n_boot = 500, use_full = FALSE)
+  options = SetOptions(n_boot = 500, use_full = FALSE, use_parallel = FALSE)
 )
 summary(fit_1)
 
@@ -46,6 +46,8 @@ accuracy_out <- accuracy(fit_1)
 # View the summary of the accuracy output
 summary(accuracy_out, nrows = 5)
 
-# Plot the output from the accuracy analysis 
+\donttest{
+# Plot the output from the accuracy analysis
 accuracy_plot <- plot(accuracy_out)
 accuracy_plot[["X"]]
+}

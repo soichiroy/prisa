@@ -21,6 +21,10 @@ inference (prisa) or labeled_only).}
 \item{elss}{The effective labeled sample size. For the labeled_only
 estimator, this corresponds to the number of labeled observations. For the
 prisa, the estimated ELSS is shown.}
+\item{rho}{The estimated proxy quality (effective correlation). NA for
+the labeled_only estimator.}
+\item{rho_lower}{Lower bound of the 95\% CI for rho. NA for labeled_only.}
+\item{rho_upper}{Upper bound of the 95\% CI for rho. NA for labeled_only.}
 }
 }
 \description{
